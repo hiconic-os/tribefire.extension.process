@@ -30,7 +30,7 @@ You should have received a copy of the GNU Lesser General Public License along w
         <V.tribefire.extension.scripting>[1.0,1.1)</V.tribefire.extension.scripting>
         <V.tribefire.setup.classic.env>[3.0,3.1)</V.tribefire.setup.classic.env>
 
-        <V.javax.servlet>3.0.1</V.javax.servlet>
+        <V.javax.servlet>3.1.0</V.javax.servlet>
     </properties>
     <licenses>
         <license>

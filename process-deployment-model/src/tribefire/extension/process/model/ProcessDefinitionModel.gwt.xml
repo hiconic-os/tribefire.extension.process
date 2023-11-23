@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<module>
+    <inherits name="com.braintribe.model.DeploymentModel"/>
+    <inherits name="com.braintribe.model.DescriptiveModel"/>
+    <inherits name="com.braintribe.model.ExtensionDeploymentModel"/>
+    <inherits name="com.braintribe.model.MetaModel"/>
+    <inherits name="com.braintribe.model.RootModel"/>
+    <inherits name="com.braintribe.model.TimeModel"/>
+    <inherits name="com.google.gwt.emul.Emulation"/>
+    <source path="deployment"/>
+</module>

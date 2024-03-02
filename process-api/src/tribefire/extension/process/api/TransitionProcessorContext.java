@@ -1,6 +1,4 @@
 // ============================================================================
-// Copyright BRAINTRIBE TECHNOLOGY GMBH, Austria, 2002-2022
-// 
 // This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 // 
@@ -11,18 +9,19 @@
 // ============================================================================
 package tribefire.extension.process.api;
 
+import com.braintribe.gm.model.reason.Reason;
+import com.braintribe.model.generic.GenericEntity;
 import com.braintribe.model.generic.manipulation.EntityProperty;
 import com.braintribe.model.generic.manipulation.Manipulation;
 import com.braintribe.model.processing.session.api.persistence.PersistenceGmSession;
-import tribefire.extension.process.model.data.Process;
 
-public interface TransitionProcessorContext<T extends Process> {
+public interface TransitionProcessorContext<T extends GenericEntity> {
 
 	EntityProperty getProcessProperty();
 	T getProcess();
 	T getProcessFromSystemSession();
-	Object getLeftState();
-	Object getEnteredState();	
+	String getLeftState();
+	String getEnteredState();	
 	PersistenceGmSession getSession();
 	PersistenceGmSession getSystemSession();
 	void notifyInducedManipulation(Manipulation manipulation);
@@ -30,5 +29,9 @@ public interface TransitionProcessorContext<T extends Process> {
 	/**
 	 * only by calling this a {@link TransitionProcessor} will be allowed to influence state changes of a process
 	 */
-	void continueWithState(Object value);
+	void continueWithState(String value);
+	
+	default void setError(Reason reason) {
+		
+	}
 }

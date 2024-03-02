@@ -1,6 +1,4 @@
 // ============================================================================
-// Copyright BRAINTRIBE TECHNOLOGY GMBH, Austria, 2002-2022
-// 
 // This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 // 
@@ -16,13 +14,13 @@ import java.util.Map;
 
 import tribefire.extension.process.api.ConditionProcessor;
 import tribefire.extension.process.api.ConditionProcessorContext;
-import tribefire.extension.process.model.data.Process;
+import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.scripting.common.CommonScriptedProcessor;
 
-public class ScriptedConditionProcessor extends CommonScriptedProcessor implements ConditionProcessor<Process> {
+public class ScriptedConditionProcessor extends CommonScriptedProcessor implements ConditionProcessor<ProcessItem> {
 
 	@Override
-	public boolean matches(ConditionProcessorContext<Process> context) {
+	public boolean matches(ConditionProcessorContext<ProcessItem> context) {
 		Map<String, Object> bindings = new HashMap<>();
 		bindings.put("$context", context);
 

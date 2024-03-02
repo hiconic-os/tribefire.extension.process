@@ -1,2 +1,0 @@
-$nature=(ManipulationPriming=com.braintribe.model.asset.natures.ManipulationPriming)()
-.accessId='cortex'

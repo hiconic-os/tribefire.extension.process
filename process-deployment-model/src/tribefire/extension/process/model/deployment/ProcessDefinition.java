@@ -1,6 +1,4 @@
 // ============================================================================
-// Copyright BRAINTRIBE TECHNOLOGY GMBH, Austria, 2002-2022
-// 
 // This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 // 
@@ -40,6 +38,7 @@ public interface ProcessDefinition extends HasErrorNode, HasOverdueNode, Decoupl
 	String maximumNumbersOfRestarts = "maximumNumbersOfRestarts";  
 	String elements = "elements";
 	String onTransit = "onTransit";
+	String onError = "onError";
 	String trigger = "trigger";
 	String triggerType = "triggerType";
 	String gracePeriod = "gracePeriod";
@@ -53,7 +52,10 @@ public interface ProcessDefinition extends HasErrorNode, HasOverdueNode, Decoupl
 
 	List<TransitionProcessor> getOnTransit();
 	void setOnTransit(List<TransitionProcessor> onTransit);
-
+	
+	List<TransitionProcessor> getOnError();
+	void setOnError(List<TransitionProcessor> onError);
+	
 	GmProperty getTrigger();
 	void setTrigger(GmProperty trigger);
 		

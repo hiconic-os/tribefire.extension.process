@@ -1,6 +1,4 @@
 // ============================================================================
-// Copyright BRAINTRIBE TECHNOLOGY GMBH, Austria, 2002-2022
-// 
 // This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 // 
@@ -16,37 +14,35 @@ import com.braintribe.wire.api.annotation.Import;
 import com.braintribe.wire.api.annotation.Managed;
 import com.braintribe.wire.api.space.WireSpace;
 
-import tribefire.extension.process.processing.BasicProcessTracer;
-import tribefire.extension.process.processing.ProcessingEngine;
-import tribefire.extension.process.wire.contract.TracingFilterConfigurationContract;
+import tribefire.extension.process.processing.mgt.MetaDataBasedMonitoredAccessesSupplier;
+import tribefire.extension.process.processing.mgt.ProcessManager;
 import tribefire.module.wire.contract.TribefireWebPlatformContract;
 
 @Managed
 public class ProcessDeployablesSpace implements WireSpace {
 
 	@Import
-	private TracingFilterConfigurationContract tracingFilterConfiguration;
-	
-	@Import
 	private TribefireWebPlatformContract tfPlatform;
 	
 	@Managed
-	private BasicProcessTracer processTracer() {
-		BasicProcessTracer bean = new BasicProcessTracer();
-		bean.setTracingFilterConfiguration(tracingFilterConfiguration);
+	public ProcessManager processManager(ExpertContext<tribefire.extension.process.model.deployment.ProcessManager> context) {
+		ProcessManager bean = new ProcessManager();
+		bean.setDeployedComponentResolver(tfPlatform.deployment().deployedComponentResolver());
+		bean.setEvaluator(tfPlatform.systemUserRelated().evaluator());
+		bean.setLocking(tfPlatform.cluster().locking());
+		bean.setMessagingSessionProvider(tfPlatform.messaging().sessionProvider());
+		bean.setSystemSessionFactory(tfPlatform.systemUserRelated().sessionFactory());
+		bean.setMonitoredAccessIdsSupplier(monitoredAccessesSupplier(context));
 		return bean;
 	}
 	
 	@Managed
-	public ProcessingEngine processingEngine(ExpertContext<tribefire.extension.process.model.deployment.ProcessingEngine> context) {
-		ProcessingEngine bean = new ProcessingEngine();
-		bean.setCortexSessionSupplier(tfPlatform.systemUserRelated().cortexSessionSupplier());
-		bean.setDeployedComponentResolver(tfPlatform.deployment().deployedComponentResolver());
-		bean.setDeployedProcessingEngine(context.getDeployable());
-		bean.setSessionFactory(tfPlatform.systemUserRelated().sessionFactory());
-		bean.setTracer(processTracer());
+	private MetaDataBasedMonitoredAccessesSupplier monitoredAccessesSupplier(ExpertContext<tribefire.extension.process.model.deployment.ProcessManager> context) {
+		MetaDataBasedMonitoredAccessesSupplier bean = new MetaDataBasedMonitoredAccessesSupplier();
+		bean.setDeployRegistry(tfPlatform.deployment().deployRegistry());
+		bean.setExternalIdOfManager(context.getDeployableExternalId());
+		bean.setModelAccessoryFactory(tfPlatform.systemUserRelated().modelAccessoryFactory());
 		return bean;
-		
 	}
 	
 }

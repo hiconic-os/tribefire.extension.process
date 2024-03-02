@@ -1,6 +1,4 @@
 // ============================================================================
-// Copyright BRAINTRIBE TECHNOLOGY GMBH, Austria, 2002-2022
-// 
 // This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 // 
@@ -38,10 +36,14 @@ public interface Node extends ProcessElement, HasOverdueNode {
 	EntityType<Node> T = EntityTypes.T(Node.class);
 	
 	String onEntered = "onEntered";
+	String onError = "onError";
 	String state = "state";
 	
 	List<TransitionProcessor> getOnEntered();
 	void setOnEntered(List<TransitionProcessor> onEntered);
+	
+	List<TransitionProcessor> getOnError();
+	void setOnError(List<TransitionProcessor> onError);
 
 	Object getState();
 	void setState(Object state);

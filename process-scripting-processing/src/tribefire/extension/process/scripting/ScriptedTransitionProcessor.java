@@ -1,6 +1,4 @@
 // ============================================================================
-// Copyright BRAINTRIBE TECHNOLOGY GMBH, Austria, 2002-2022
-// 
 // This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 // 
@@ -16,13 +14,13 @@ import java.util.Map;
 
 import tribefire.extension.process.api.TransitionProcessor;
 import tribefire.extension.process.api.TransitionProcessorContext;
+import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.scripting.common.CommonScriptedProcessor;
-import tribefire.extension.process.model.data.Process;
 
-public class ScriptedTransitionProcessor extends CommonScriptedProcessor implements TransitionProcessor<Process> {
+public class ScriptedTransitionProcessor extends CommonScriptedProcessor implements TransitionProcessor<ProcessItem> {
 
 	@Override
-	public void process(TransitionProcessorContext<Process> context) {
+	public void process(TransitionProcessorContext<ProcessItem> context) {
 		Map<String, Object> bindings = new HashMap<>();
 		bindings.put("$context", context);
 

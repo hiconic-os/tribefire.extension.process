@@ -4,6 +4,10 @@
 	<name>process-module - tribefire.extension.process</name>
 	<buildSpec>
 		<buildCommand>
+			<name>com.braintribe.devrock.arb.builder.ArtifactReflectionBuilder</name>
+			<arguments/>
+		</buildCommand>
+		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
 			<arguments/>
 		</buildCommand>

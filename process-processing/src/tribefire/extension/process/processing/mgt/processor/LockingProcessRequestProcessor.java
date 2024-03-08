@@ -13,12 +13,12 @@ import com.braintribe.gm.model.reason.Maybe;
 import com.braintribe.gm.model.reason.Reason;
 import com.braintribe.model.processing.accessrequest.api.ReasonedStatefulProcessor;
 
-import tribefire.extension.process.api.model.ProcessRequest;
+import tribefire.extension.process.api.model.LockedProcessRequest;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.processing.mgt.ProcessLog;
 import tribefire.extension.process.processing.mgt.common.ProcessLockingTrait;
 
-public abstract class LockingProcessRequestProcessor<R extends ProcessRequest, E> extends ProcessRequestProcessor<R, E> implements ReasonedStatefulProcessor<E>, ProcessLog, ProcessLockingTrait {
+public abstract class LockingProcessRequestProcessor<R extends LockedProcessRequest, E> extends ProcessRequestProcessor<R, E> implements ReasonedStatefulProcessor<E>, ProcessLog, ProcessLockingTrait {
 	
 	protected ProcessItem processItem;
 	protected int logSequence;
@@ -34,6 +34,9 @@ public abstract class LockingProcessRequestProcessor<R extends ProcessRequest, E
 		
 		if (invalidationReason != null)
 			return invalidationReason.asMaybe();
+		
+		if (request.getReentrantLockId() != null)
+			return processLocked();
 
 		return executeLocked(this::processLocked);
 	}

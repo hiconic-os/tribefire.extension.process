@@ -18,7 +18,7 @@ import com.braintribe.model.generic.reflection.EntityTypes;
 import com.braintribe.model.service.api.ServiceRequest;
 import com.braintribe.model.service.api.result.Neutral;
 
-import tribefire.extension.process.api.model.ProcessRequest;
+import tribefire.extension.process.api.model.LockedProcessRequest;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.state.ProcessActivity;
 import tribefire.extension.process.reason.model.CouldNotAcquireProcessLock;
@@ -59,7 +59,7 @@ import tribefire.extension.process.reason.model.UnexpectedProcessState;
 @UnsatisfiedBy(UnexpectedProcessActivity.class)
 @UnsatisfiedBy(UnexpectedProcessState.class)
 
-public interface HandleProcess extends ProcessRequest {
+public interface HandleProcess extends LockedProcessRequest {
 	EntityType<HandleProcess> T = EntityTypes.T(HandleProcess.class);
 	
 	@Override

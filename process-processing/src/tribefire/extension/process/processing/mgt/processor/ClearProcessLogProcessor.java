@@ -15,17 +15,17 @@ import com.braintribe.gm.model.reason.Maybe;
 import com.braintribe.model.generic.manipulation.DeleteMode;
 import com.braintribe.model.processing.session.api.persistence.PersistenceGmSession;
 import com.braintribe.model.query.SelectQuery;
-import com.braintribe.model.service.api.result.Neutral;
 import com.braintribe.utils.CollectionTools;
 
 import tribefire.extension.process.api.model.crtl.ClearProcessLog;
+import tribefire.extension.process.api.model.data.ClearProcessLogResponse;
 import tribefire.extension.process.data.model.log.ProcessLogEntry;
 import tribefire.extension.process.processing.mgt.common.ProcessLogQueries;
 
-public class ClearProcessLogProcessor extends ProcessRequestProcessor<ClearProcessLog, Neutral> {
+public class ClearProcessLogProcessor extends ProcessRequestProcessor<ClearProcessLog, ClearProcessLogResponse> {
 
 	@Override
-	protected Maybe<Neutral> processValidatedRequest() {
+	protected Maybe<ClearProcessLogResponse> processValidatedRequest() {
 		SelectQuery entriesQuery = ProcessLogQueries.logEntryIds(itemId, request);
 		
 		List<String> ids = systemSession().queryDetached().select(entriesQuery).list();
@@ -43,6 +43,9 @@ public class ClearProcessLogProcessor extends ProcessRequestProcessor<ClearProce
 			bulkSession.commit();
 		}
 		
-		return Maybe.complete(Neutral.NEUTRAL);
+		ClearProcessLogResponse response = ClearProcessLogResponse.T.create();
+		response.setClearedLogEntries(ids.size());
+		
+		return Maybe.complete(response);
 	}
 }

@@ -56,13 +56,19 @@ public interface ProcessDefinition extends HasErrorNode, HasOverdueNode, Decoupl
 	List<TransitionProcessor> getOnError();
 	void setOnError(List<TransitionProcessor> onError);
 	
+	/**
+	 * @deprecated ignored as a ProcessItem is started with StartProcess from process-api-model and the ProcessItem already declares the state property
+	 */
+	@Deprecated
 	GmProperty getTrigger();
 	void setTrigger(GmProperty trigger);
 		
 	/**
 	 * optional : if null, declaring type of {@link #getTrigger()} is used
 	 * @return - the {@link GmEntityType} to match
+	 * @deprecated ignored as a ProcessItem is now linked with the ManageWithProcess metadata
 	 */
+	@Deprecated
 	GmEntityType getTriggerType();
 	void setTriggerType( GmEntityType triggerType);
 	

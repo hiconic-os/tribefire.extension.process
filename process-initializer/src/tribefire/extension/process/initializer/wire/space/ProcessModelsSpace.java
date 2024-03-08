@@ -77,6 +77,8 @@ public class ProcessModelsSpace extends AbstractInitializerSpace implements Proc
 	@Managed
 	private ProcessManager processManager() {
 		ProcessManager bean = create(ProcessManager.T);
+		bean.setName("Process Manager");
+		bean.setExternalId("processor.processManager");
 		return bean;
 	}
 	

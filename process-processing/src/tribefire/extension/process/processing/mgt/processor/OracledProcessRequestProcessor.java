@@ -14,14 +14,14 @@ import com.braintribe.gm.model.reason.Reason;
 import com.braintribe.gm.model.reason.Reasons;
 import com.braintribe.logging.Logger;
 
-import tribefire.extension.process.api.model.ProcessRequest;
+import tribefire.extension.process.api.model.LockedProcessRequest;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.model.deployment.ProcessDefinition;
 import tribefire.extension.process.model.deployment.meta.ManageProcessItemWith;
 import tribefire.extension.process.processing.oracle.ProcessOracle;
 import tribefire.extension.process.reason.model.ProcessDefinitionNotFound;
 
-public abstract class OracledProcessRequestProcessor<R extends ProcessRequest, E> extends LockingProcessRequestProcessor<R, E> {
+public abstract class OracledProcessRequestProcessor<R extends LockedProcessRequest, E> extends LockingProcessRequestProcessor<R, E> {
 	private static final Logger logger = Logger.getLogger(OracledProcessRequestProcessor.class);
 	protected ProcessOracle processOracle;
 	

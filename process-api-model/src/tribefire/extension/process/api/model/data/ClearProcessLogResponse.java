@@ -7,21 +7,17 @@
 // 
 // You should have received a copy of the GNU Lesser General Public License along with this library; See http://www.gnu.org/licenses/.
 // ============================================================================
-package tribefire.extension.process.api.model.crtl;
+package tribefire.extension.process.api.model.data;
 
-import com.braintribe.model.generic.eval.EvalContext;
-import com.braintribe.model.generic.eval.Evaluator;
+import com.braintribe.model.generic.GenericEntity;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
-import com.braintribe.model.service.api.ServiceRequest;
 
-import tribefire.extension.process.api.model.ProcessRequest;
-import tribefire.extension.process.api.model.data.ClearProcessLogResponse;
-import tribefire.extension.process.api.model.data.ProcessLogFilter;
-
-public interface ClearProcessLog extends ProcessRequest, ProcessLogFilter {
-	EntityType<ClearProcessLog> T = EntityTypes.T(ClearProcessLog.class);
+public interface ClearProcessLogResponse extends GenericEntity {
+	EntityType<ClearProcessLogResponse> T = EntityTypes.T(ClearProcessLogResponse.class);
 	
-	@Override
-	EvalContext<ClearProcessLogResponse> eval(Evaluator<ServiceRequest> evaluator);
+	String clearedLogEntries = "clearedLogEntries";
+	
+	int getClearedLogEntries();
+	void setClearedLogEntries(int clearedLogEntries);
 }

@@ -14,7 +14,7 @@ import com.braintribe.model.generic.annotation.meta.UnsatisfiedBy;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
-import tribefire.extension.process.api.model.ProcessRequest;
+import tribefire.extension.process.api.model.LockedProcessRequest;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.state.ProcessActivity;
 import tribefire.extension.process.data.model.state.ProcessControl;
@@ -49,6 +49,6 @@ import tribefire.extension.process.reason.model.UnexpectedProcessState;
 @UnsatisfiedBy(UnexpectedProcessActivity.class)
 @UnsatisfiedBy(UnexpectedProcessState.class)
 
-public interface RecoverProcess extends ProcessRequest, ProcessControl {
+public interface RecoverProcess extends LockedProcessRequest, ProcessControl {
 	EntityType<RecoverProcess> T = EntityTypes.T(RecoverProcess.class);
 }

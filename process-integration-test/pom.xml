@@ -34,7 +34,7 @@ You should have received a copy of the GNU Lesser General Public License along w
         </dependency>
         <dependency>
             <groupId>tribefire.extension.process</groupId>
-            <artifactId>process-processing-test</artifactId>
+            <artifactId>process-processing-test-commons</artifactId>
             <version>${V.tribefire.extension.process}</version>
         </dependency>
         <dependency>

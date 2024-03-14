@@ -19,6 +19,8 @@ import com.braintribe.gm.model.reason.Reasons;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.value.PersistentEntityReference;
 import com.braintribe.model.processing.lock.api.Locking;
+import com.braintribe.model.processing.lock.api.ReentrableLocking;
+import com.braintribe.model.processing.session.api.persistence.PersistenceGmSession;
 
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.reason.model.CouldNotAcquireProcessLock;
@@ -28,16 +30,27 @@ public interface ProcessLockingTrait {
 	EntityType<? extends ProcessItem> getItemEntityType();
 	String getItemId();
 	Locking getLocking();
+	PersistenceGmSession systemSession();
 	
 	default Maybe<Lock> lockProcess() {
+		return lockProcess(null);
+	}
+	
+	
+	default Maybe<Lock> lockProcess(String reentrantId) {
 		PersistentEntityReference reference = PersistentEntityReference.T.create();
 		
 		reference.setTypeSignature(getItemEntityType().getTypeSignature());
 		reference.setRefId(getItemId());
 		
-		// TODO: get lock more convenient
-		String lockId = getItemEntityType().getTypeSignature() + "[" + getItemId() + "]";  
-		Lock lock = getLocking().forIdentifier("entity", lockId).writeLock();
+		// TODO: in order to avoid lockId syntax redundancy we should get lock more conveniently with help of locking api 
+		String lockId = getItemEntityType().getTypeSignature() + "[" + getItemId() + "]@" + systemSession().getAccessId();  
+		
+		ReentrableLocking locking = reentrantId != null?
+				getLocking().withReentranceId(reentrantId):
+				getLocking();
+		
+		Lock lock = locking.forIdentifier("entity", lockId).writeLock();
 		
 		try {
 			if (!lock.tryLock(5, TimeUnit.SECONDS)) {

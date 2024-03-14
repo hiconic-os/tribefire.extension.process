@@ -12,7 +12,7 @@ package tribefire.extension.process.processing.mgt.processor;
 import com.braintribe.gm.model.reason.Maybe;
 import com.braintribe.model.service.api.result.Neutral;
 
-import tribefire.extension.process.api.model.crtl.NotifyProcessActivity;
+import tribefire.extension.process.api.model.ctrl.NotifyProcessActivity;
 
 public class NotifyProcessActivityProcessor extends ProcessRequestProcessor<NotifyProcessActivity, Neutral> {
 	@Override

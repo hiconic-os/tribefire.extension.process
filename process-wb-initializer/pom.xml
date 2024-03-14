@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>tribefire.extension.process</groupId>
+        <artifactId>parent</artifactId>
+        <version>[1.0,1.1)</version>
+    </parent>
+    <artifactId>process-wb-initializer</artifactId>
+    <version>1.0.1</version>
+    <properties/>
+    <dependencies>
+        <dependency>
+            <groupId>tribefire.cortex</groupId>
+            <artifactId>initializer-support</artifactId>
+            <version>${V.tribefire.cortex}</version>
+        </dependency>
+        <dependency>
+            <groupId>tribefire.cortex.assets</groupId>
+            <artifactId>cortex-wb-initializer</artifactId>
+            <version>${V.tribefire.cortex.assets}</version>
+            <classifier>asset</classifier>
+            <type>man</type>
+            <?tag asset?>
+        </dependency>
+        <dependency>
+            <groupId>tribefire.extension.process</groupId>
+            <artifactId>process-wb-resources</artifactId>
+            <version>${V.tribefire.extension.process}</version>
+            <classifier>asset</classifier>
+            <type>man</type>
+            <?tag asset?>
+        </dependency>
+        <dependency>
+            <groupId>tribefire.extension.process</groupId>
+            <artifactId>process-deployment-model</artifactId>
+            <version>${V.tribefire.extension.process}</version>
+            <?tag asset ?>
+        </dependency>
+    </dependencies>
+</project>

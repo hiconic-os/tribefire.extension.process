@@ -30,6 +30,7 @@ import com.braintribe.gm.service.wire.common.contract.CommonServiceProcessingCon
 import com.braintribe.model.deployment.Deployable;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.messaging.dmb.GmDmbMqMessaging;
+import com.braintribe.model.processing.lock.impl.SimpleCdlLocking;
 import com.braintribe.model.processing.securityservice.commons.provider.StaticUserSessionHolder;
 import com.braintribe.model.processing.securityservice.commons.scope.StandardUserSessionScoping;
 import com.braintribe.model.processing.service.common.context.UserSessionStack;
@@ -50,7 +51,6 @@ import com.braintribe.wire.api.annotation.Managed;
 import tribefire.cortex.leadership.impl.LockingBasedLeadershipManager;
 import tribefire.extension.process.model.deployment.ConditionProcessor;
 import tribefire.extension.process.model.deployment.TransitionProcessor;
-import tribefire.extension.process.processing.base.LocalLocking;
 import tribefire.extension.process.processing.base.wire.contract.TestPlatformContract;
 import tribefire.platform.impl.deployment.BasicDeployRegistry;
 import tribefire.platform.impl.deployment.ComponentInterfaceBindingsRegistry;
@@ -123,9 +123,8 @@ public class TestPlatformSpace implements TestPlatformContract {
 	
 	@Override
 	@Managed
-	public LocalLocking locking() {
-		LocalLocking bean = new LocalLocking();
-		return bean;
+	public SimpleCdlLocking locking() {
+		return new SimpleCdlLocking();
 	}
 	
 	@Override

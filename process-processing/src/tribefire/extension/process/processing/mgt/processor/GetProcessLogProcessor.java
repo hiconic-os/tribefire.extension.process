@@ -15,7 +15,7 @@ import com.braintribe.gm.model.reason.Maybe;
 import com.braintribe.model.query.SelectQuery;
 import com.braintribe.model.query.SelectQueryResult;
 
-import tribefire.extension.process.api.model.crtl.GetProcessLog;
+import tribefire.extension.process.api.model.ctrl.GetProcessLog;
 import tribefire.extension.process.api.model.data.ProcessLog;
 import tribefire.extension.process.data.model.log.ProcessLogEntry;
 import tribefire.extension.process.processing.mgt.common.ProcessLogQueries;

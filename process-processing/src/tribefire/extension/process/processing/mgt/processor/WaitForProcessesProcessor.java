@@ -30,7 +30,7 @@ import com.braintribe.model.record.ListRecord;
 import com.braintribe.model.time.TimeSpan;
 import com.braintribe.model.time.TimeUnit;
 
-import tribefire.extension.process.api.model.crtl.WaitForProcesses;
+import tribefire.extension.process.api.model.ctrl.WaitForProcesses;
 import tribefire.extension.process.api.model.data.ProcessAndActivities;
 import tribefire.extension.process.api.model.data.ProcessIdentification;
 import tribefire.extension.process.data.model.ProcessItem;

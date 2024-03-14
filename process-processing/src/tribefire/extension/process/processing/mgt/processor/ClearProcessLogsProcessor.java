@@ -18,7 +18,7 @@ import com.braintribe.model.query.SelectQuery;
 import com.braintribe.model.service.api.result.Neutral;
 import com.braintribe.utils.CollectionTools;
 
-import tribefire.extension.process.api.model.crtl.ClearProcessLogs;
+import tribefire.extension.process.api.model.ctrl.ClearProcessLogs;
 import tribefire.extension.process.data.model.log.ProcessLogEntry;
 import tribefire.extension.process.processing.mgt.common.ProcessLogQueries;
 

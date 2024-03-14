@@ -32,21 +32,25 @@ You should have received a copy of the GNU Lesser General Public License along w
             <groupId>com.braintribe.gm</groupId>
             <artifactId>root-model</artifactId>
             <version>${V.com.braintribe.gm}</version>
+            <?tag asset?>
         </dependency>
         <dependency>
             <groupId>com.braintribe.gm</groupId>
             <artifactId>meta-model</artifactId>
             <version>${V.com.braintribe.gm}</version>
+            <?tag asset?>
         </dependency>
         <dependency>
             <groupId>tribefire.extension.process</groupId>
             <artifactId>process-deployment-model</artifactId>
             <version>${V.tribefire.extension.process}</version>
+            <?tag asset?>
         </dependency>
-        <dependency>
-            <groupId>tribefire.extension.process</groupId>
-            <artifactId>process-data-model</artifactId>
-            <version>${V.tribefire.extension.process}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>tribefire.extension.process</groupId>-->
+<!--            <artifactId>process-data-model</artifactId>-->
+<!--            <version>${V.tribefire.extension.process}</version>-->
+<!--            	<?tag asset?>-->
+<!--        </dependency>-->
     </dependencies>
 </project>

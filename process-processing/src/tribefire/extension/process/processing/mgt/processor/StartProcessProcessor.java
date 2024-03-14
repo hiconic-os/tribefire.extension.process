@@ -15,8 +15,8 @@ import com.braintribe.gm.model.reason.Reasons;
 import com.braintribe.gm.model.reason.essential.InternalError;
 import com.braintribe.model.service.api.result.Neutral;
 
-import tribefire.extension.process.api.model.crtl.StartProcess;
-import tribefire.extension.process.api.model.crtl.StartProcessToState;
+import tribefire.extension.process.api.model.ctrl.StartProcess;
+import tribefire.extension.process.api.model.ctrl.StartProcessToState;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.log.ProcessLogEvent;
 import tribefire.extension.process.data.model.state.ProcessActivity;

@@ -17,7 +17,7 @@ import com.braintribe.model.processing.session.api.persistence.PersistenceGmSess
 import com.braintribe.model.query.SelectQuery;
 import com.braintribe.utils.CollectionTools;
 
-import tribefire.extension.process.api.model.crtl.ClearProcessLog;
+import tribefire.extension.process.api.model.ctrl.ClearProcessLog;
 import tribefire.extension.process.api.model.data.ClearProcessLogResponse;
 import tribefire.extension.process.data.model.log.ProcessLogEntry;
 import tribefire.extension.process.processing.mgt.common.ProcessLogQueries;

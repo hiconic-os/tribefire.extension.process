@@ -28,8 +28,8 @@ import com.braintribe.model.service.api.MulticastRequest;
 import com.braintribe.model.service.api.result.Neutral;
 import com.braintribe.model.time.TimeSpan;
 
-import tribefire.extension.process.api.model.crtl.HandleProcess;
-import tribefire.extension.process.api.model.crtl.NotifyProcessActivity;
+import tribefire.extension.process.api.model.ctrl.HandleProcess;
+import tribefire.extension.process.api.model.ctrl.NotifyProcessActivity;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.log.ProcessLogEvent;
 import tribefire.extension.process.data.model.state.ProcessActivity;

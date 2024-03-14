@@ -16,8 +16,8 @@ import com.braintribe.gm.model.reason.Reason;
 import com.braintribe.gm.model.reason.Reasons;
 import com.braintribe.model.service.api.result.Neutral;
 
-import tribefire.extension.process.api.model.crtl.ResumeProcess;
-import tribefire.extension.process.api.model.crtl.ResumeProcessToState;
+import tribefire.extension.process.api.model.ctrl.ResumeProcess;
+import tribefire.extension.process.api.model.ctrl.ResumeProcessToState;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.log.ProcessLogEvent;
 import tribefire.extension.process.data.model.state.ProcessActivity;

@@ -82,7 +82,10 @@ public class MetaDataBasedMonitoredAccessesSupplier implements Supplier<List<Str
 	}
 	
 	private void addAccessIfMappedToManager(String accessId) {
-		ModelAccessory modelAccessory = modelAccessoryFactory.getForAccess(accessId);
+		ModelAccessory modelAccessory = modelAccessoryFactory.getForServiceDomain(accessId);
+		
+		if (modelAccessory.getOracle().findEntityTypeOracle(ProcessManagerRequest.T) == null)
+			return;
 		
 		ProcessWith processWith = modelAccessory.getMetaData().entityType(ProcessManagerRequest.T).meta(ProcessWith.T).exclusive();
 		

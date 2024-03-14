@@ -24,11 +24,11 @@ import tribefire.extension.process.data.model.ProcessItem;
 public interface LockedProcessRequest extends ProcessRequest {
 	EntityType<LockedProcessRequest> T = EntityTypes.T(LockedProcessRequest.class);
 
-	String reentrantLockId = "reentrantLockId";
+	String reentranceLockId = "reentranceLockId";
 	
 	/**
 	 * The id of an existing lock for reentrant distributed locking
 	 */
-	String getReentrantLockId();
-	void setReentrantLockId(String reentrantLockId);
+	String getReentranceLockId();
+	void setReentranceLockId(String reentranceLockId);
 }

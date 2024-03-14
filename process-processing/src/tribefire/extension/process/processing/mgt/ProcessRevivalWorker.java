@@ -16,7 +16,7 @@ import com.braintribe.gm.model.reason.Maybe;
 import com.braintribe.logging.Logger;
 import com.braintribe.model.service.api.result.Neutral;
 
-import tribefire.extension.process.api.model.crtl.ReviveProcesses;
+import tribefire.extension.process.api.model.ctrl.ReviveProcesses;
 
 public class ProcessRevivalWorker implements Runnable {
 	private static final Logger logger = Logger.getLogger(ProcessRevivalWorker.class);

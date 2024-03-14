@@ -18,7 +18,7 @@ import com.braintribe.gm.model.reason.essential.Canceled;
 import com.braintribe.model.time.TimeSpan;
 import com.braintribe.model.time.TimeUnit;
 
-import tribefire.extension.process.api.model.crtl.WaitForProcess;
+import tribefire.extension.process.api.model.ctrl.WaitForProcess;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.state.ProcessActivity;
 

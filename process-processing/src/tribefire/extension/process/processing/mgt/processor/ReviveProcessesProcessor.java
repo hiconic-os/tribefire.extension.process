@@ -27,7 +27,7 @@ import com.braintribe.model.service.api.result.Neutral;
 import com.braintribe.model.time.TimeSpan;
 import com.braintribe.model.time.TimeUnit;
 
-import tribefire.extension.process.api.model.crtl.ReviveProcesses;
+import tribefire.extension.process.api.model.ctrl.ReviveProcesses;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.state.ProcessActivity;
 import tribefire.extension.process.model.deployment.ProcessDefinition;

@@ -14,7 +14,7 @@ You should have received a copy of the GNU Lesser General Public License along w
     <version>1.0.4</version>
     <packaging>pom</packaging>
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>21</java.version>
         <V.com.google.gwt>2.8.0</V.com.google.gwt>
         <V.com.sencha.gxt>4.0.2</V.com.sencha.gxt>
         <V.org.vectomatic>0.5.10</V.org.vectomatic>
@@ -25,6 +25,7 @@ You should have received a copy of the GNU Lesser General Public License along w
         <V.tribefire.gwt>[3.0,3.1)</V.tribefire.gwt>
         <V.tribefire.js>[3.0,3.1)</V.tribefire.js>
         <V.tribefire.cortex>[3.0,3.1)</V.tribefire.cortex>
+        <V.tribefire.cortex.assets>[3.0,3.1)</V.tribefire.cortex.assets>
         <V.tribefire.extension.process>[1.0,1.1)</V.tribefire.extension.process>
         <V.tribefire.extension.scripting>[1.0,1.1)</V.tribefire.extension.scripting>
         <V.tribefire.setup.classic.env>[3.0,3.1)</V.tribefire.setup.classic.env>

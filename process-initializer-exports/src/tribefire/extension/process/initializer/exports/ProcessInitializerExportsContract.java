@@ -19,7 +19,7 @@ import tribefire.cortex.initializer.support.impl.lookup.InstanceLookup;
 public interface ProcessInitializerExportsContract extends WireSpace {
 	
 	String CONFIGURED_API_MODEL_NAME = "tribefire.extension.process:configured-process-api-model" ; // TODO: replace by static ArtifactReflection fields access concatenation
-	String CONFIGURED_DATA_MODEL_NAME = "tribefire.extension.process:configured-process-model"; // TODO: replace by static ArtifactReflection fields access concatenation
+	String CONFIGURED_DATA_MODEL_NAME = "tribefire.extension.process:configured-process-data-model"; // TODO: replace by static ArtifactReflection fields access concatenation
 	
 	String CONFIGURED_API_MODEL_ID = "model:" + CONFIGURED_API_MODEL_NAME;
 	String CONFIGURED_DATA_MODEL_ID = "model:" + CONFIGURED_DATA_MODEL_NAME;

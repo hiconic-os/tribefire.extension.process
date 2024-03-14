@@ -30,7 +30,7 @@ import com.braintribe.transport.messaging.api.MessageProducer;
 import com.braintribe.transport.messaging.api.MessagingSession;
 import com.braintribe.transport.messaging.api.MessagingSessionProvider;
 
-import tribefire.extension.process.api.model.crtl.HandleProcess;
+import tribefire.extension.process.api.model.ctrl.HandleProcess;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.processing.oracle.ProcessManagerOracle;
 

@@ -36,9 +36,11 @@ import com.braintribe.transport.messaging.api.MessagingSession;
 import com.braintribe.transport.messaging.api.MessagingSessionProvider;
 
 import tribefire.extension.process.api.model.ProcessManagerRequest;
+import tribefire.extension.process.api.model.analysis.GetProcessLog;
+import tribefire.extension.process.api.model.analysis.GetProcessLogByScalarFilters;
+import tribefire.extension.process.api.model.analysis.GetProcessList;
 import tribefire.extension.process.api.model.ctrl.ClearProcessLog;
 import tribefire.extension.process.api.model.ctrl.ClearProcessLogs;
-import tribefire.extension.process.api.model.ctrl.GetProcessLog;
 import tribefire.extension.process.api.model.ctrl.HandleProcess;
 import tribefire.extension.process.api.model.ctrl.NotifyProcessActivity;
 import tribefire.extension.process.api.model.ctrl.RecoverProcess;
@@ -49,7 +51,9 @@ import tribefire.extension.process.api.model.ctrl.WaitForProcess;
 import tribefire.extension.process.api.model.ctrl.WaitForProcesses;
 import tribefire.extension.process.processing.mgt.processor.ClearProcessLogProcessor;
 import tribefire.extension.process.processing.mgt.processor.ClearProcessLogsProcessor;
+import tribefire.extension.process.processing.mgt.processor.GetProcessLogByScalarFiltersProcessor;
 import tribefire.extension.process.processing.mgt.processor.GetProcessLogProcessor;
+import tribefire.extension.process.processing.mgt.processor.GetProcessListProcessor;
 import tribefire.extension.process.processing.mgt.processor.HandleProcessProcessor;
 import tribefire.extension.process.processing.mgt.processor.NotifyProcessActivityProcessor;
 import tribefire.extension.process.processing.mgt.processor.RecoverProcessProcessor;
@@ -172,9 +176,13 @@ public class ProcessManager extends AbstractDispatchingAccessRequestProcessor<Pr
 		
 		// other management
 		configurer.register(ReviveProcesses.T, ReviveProcessesProcessor::new);
-		configurer.register(GetProcessLog.T, GetProcessLogProcessor::new);
 		configurer.register(ClearProcessLog.T, ClearProcessLogProcessor::new);
 		configurer.register(ClearProcessLogs.T, ClearProcessLogsProcessor::new);
+		
+		// analysis
+		configurer.register(GetProcessList.T, GetProcessListProcessor::new);
+		configurer.register(GetProcessLog.T, GetProcessLogProcessor::new);
+		configurer.register(GetProcessLogByScalarFilters.T, GetProcessLogByScalarFiltersProcessor::new);
 	}
 
 	@Override

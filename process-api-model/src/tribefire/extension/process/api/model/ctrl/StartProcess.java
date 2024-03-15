@@ -21,8 +21,6 @@ import com.braintribe.model.service.api.result.Neutral;
 import tribefire.extension.process.api.model.LockedProcessRequest;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.reason.model.CouldNotAcquireProcessLock;
-import tribefire.extension.process.reason.model.EdgeNotFound;
-import tribefire.extension.process.reason.model.NodeNotFound;
 import tribefire.extension.process.reason.model.ProcessDefinitionNotFound;
 import tribefire.extension.process.reason.model.ProcessNotFound;
 import tribefire.extension.process.reason.model.UnexpectedProcessActivity;
@@ -47,8 +45,6 @@ import tribefire.extension.process.reason.model.UnexpectedProcessState;
 @UnsatisfiedBy(ProcessDefinitionNotFound.class)
 @UnsatisfiedBy(CouldNotAcquireProcessLock.class)
 @UnsatisfiedBy(ProcessNotFound.class)
-@UnsatisfiedBy(NodeNotFound.class)
-@UnsatisfiedBy(EdgeNotFound.class)
 @UnsatisfiedBy(UnexpectedProcessActivity.class)
 @UnsatisfiedBy(UnexpectedProcessState.class)
 

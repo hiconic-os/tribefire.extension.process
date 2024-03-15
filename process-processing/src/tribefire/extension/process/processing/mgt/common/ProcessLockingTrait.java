@@ -66,7 +66,11 @@ public interface ProcessLockingTrait {
 	}
 	
 	default <T> Maybe<T> executeLocked(Supplier<Maybe<T>> executable) {
-		Maybe<Lock> lockMaybe = lockProcess();
+		return executeLocked(executable, null);
+	}
+	
+	default <T> Maybe<T> executeLocked(Supplier<Maybe<T>> executable, String reentranceLockId) {
+		Maybe<Lock> lockMaybe = lockProcess(reentranceLockId);
 		
 		if (lockMaybe.isUnsatisfied())
 			return lockMaybe.whyUnsatisfied().asMaybe();

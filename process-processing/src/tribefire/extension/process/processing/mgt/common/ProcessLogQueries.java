@@ -30,6 +30,27 @@ import tribefire.extension.process.data.model.log.ProcessLogEvent;
 import tribefire.extension.process.data.model.log.ProcessLogLevel;
 
 public class ProcessLogQueries extends SelectQueries {
+	public static SelectQuery processes(ProcessFilter processFilter, boolean descending, HasPagination pagination) {
+		From p = source(ProcessItem.T);
+		
+		Conjunction conditions = Conjunction.T.create();
+		addProcessFilterCondition(p, processFilter, conditions);
+		
+		SelectQuery query = from(p) //
+				.where(conditions) //
+				.select(p);
+		
+		if (pagination != null) {
+			query = query.paging(pagination.getPageOffset(), pagination.getPageLimit());
+		}
+		
+		OrderingDirection direction = descending ? OrderingDirection.descending : OrderingDirection.ascending;
+
+		query = query.orderBy(direction, property(p, ProcessItem.lastTransit));
+
+		return query;		
+	}
+	
 	public static SelectQuery logEntryIds(ProcessFilter processFilter, ProcessLogFilter logfilter) {
 		From p = source(ProcessItem.T);
 		From e = source(ProcessLogEntry.T);
@@ -40,7 +61,7 @@ public class ProcessLogQueries extends SelectQueries {
 		conditions.add(eq(property(e, ProcessLogEntry.itemId), property(p, ProcessItem.id)));
 		
 		addlogFilterCondition(e, logfilter, conditions);
-		addProcessFilterCondition(e, processFilter, conditions);
+		addProcessFilterCondition(p, processFilter, conditions);
 
 		return from(e) //
 			.where(conditions) //

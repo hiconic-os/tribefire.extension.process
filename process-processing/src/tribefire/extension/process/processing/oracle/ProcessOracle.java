@@ -9,6 +9,7 @@
 // ============================================================================
 package tribefire.extension.process.processing.oracle;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +35,7 @@ import tribefire.extension.process.reason.model.NodeNotFound;
 public class ProcessOracle {
 	public ProcessDefinition processDefinition;
 	public Map<String, Node> nodeByState = new HashMap<>();
+	public Map<String, List<Edge>> standardEdgesFromState = new HashMap<>();
 	public Set<StandardNode> fromNodes = new HashSet<>();
 	public Map<Pair<String,String>, Edge> edgesByStateChange = new HashMap<>();
 	//public MultiMap<Object, ConditionalEdge> conditionalEdgesByLeftState = new ComparatorBasedNavigableMultiMap<Object, ConditionalEdge>(StateComparator.instance, EdgeComparator.instance);
@@ -64,6 +66,9 @@ public class ProcessOracle {
 				
 				fromNodes.add(fromNode);
 				edgesByStateChange.put(key, edge);
+				
+				if (!(edge instanceof ConditionalEdge))
+					standardEdgesFromState.computeIfAbsent(fromState, k -> new ArrayList<>()).add(edge);
 			}
 			
 		}
@@ -100,7 +105,7 @@ public class ProcessOracle {
 		case 1:
 			return Maybe.complete(defaultEdges.get(0));
 		default:
-			return Reasons.build(EdgeNotFound.T).text("Ambigous edges default conditional edges on initial node").toMaybe();
+			return Reasons.build(EdgeNotFound.T).text("Ambiguous default conditional edges on initial node").toMaybe();
 		}
 	}
 

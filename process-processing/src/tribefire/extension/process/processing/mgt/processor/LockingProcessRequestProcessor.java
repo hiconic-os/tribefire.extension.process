@@ -35,7 +35,7 @@ public abstract class LockingProcessRequestProcessor<R extends LockedProcessRequ
 		if (invalidationReason != null)
 			return invalidationReason.asMaybe();
 		
-		return executeLocked(this::processLocked);
+		return executeLocked(this::processLocked, request.getReentranceLockId());
 	}
 	
 	private Maybe<E> processLocked() {

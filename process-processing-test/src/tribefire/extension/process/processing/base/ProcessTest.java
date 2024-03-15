@@ -36,7 +36,8 @@ import com.braintribe.model.service.api.result.Neutral;
 import com.braintribe.model.time.TimeSpan;
 import com.braintribe.model.time.TimeUnit;
 
-import tribefire.extension.process.api.model.ctrl.GetProcessLog;
+import tribefire.extension.process.api.model.analysis.GetProcessList;
+import tribefire.extension.process.api.model.analysis.GetProcessLog;
 import tribefire.extension.process.api.model.ctrl.RecoverProcess;
 import tribefire.extension.process.api.model.ctrl.ResumeProcess;
 import tribefire.extension.process.api.model.ctrl.ResumeProcessToState;
@@ -47,6 +48,7 @@ import tribefire.extension.process.api.model.ctrl.WaitForProcess;
 import tribefire.extension.process.api.model.ctrl.WaitForProcesses;
 import tribefire.extension.process.api.model.data.ProcessAndActivities;
 import tribefire.extension.process.api.model.data.ProcessIdentification;
+import tribefire.extension.process.api.model.data.ProcessList;
 import tribefire.extension.process.api.model.data.ProcessLog;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.log.ProcessLogEntry;
@@ -143,8 +145,11 @@ public class ProcessTest extends ProcessProcessingTestBase {
 		Assertions.assertThat(process.getTags()).isEqualTo(expectedTags);
 		
 		LogMatcher logMatcher = new LogMatcher();
-		
-		logMatcher.build(ProcessLogEvent.PROCESS_STARTED).state(SimpleProcessState.ONE.name()).done();
+
+		logMatcher.build(ProcessLogEvent.PROCESS_STARTED).done();
+		logMatcher.build(ProcessLogEvent.CONDITION_MATCHED).done();
+		logMatcher.build(ProcessLogEvent.STATE_CHANGED).state(SimpleProcessState.ONE.name()).done();
+
 		logMatcher.build(ProcessLogEvent.PROCESSOR_EXECUTED).state(SimpleProcessState.ONE.name()).done();
 		logMatcher.build(ProcessLogEvent.CONDITION_MATCHED).state(SimpleProcessState.ONE.name()).done();
 		logMatcher.build(ProcessLogEvent.STATE_CHANGED).state(SimpleProcessState.TWO.name()).done();
@@ -265,13 +270,17 @@ public class ProcessTest extends ProcessProcessingTestBase {
 
 		LogMatcher logMatcher = new LogMatcher();
 		
-		logMatcher.build(ProcessLogEvent.PROCESS_STARTED).state(AmountProcessState.DECISION.name()).done();
+		logMatcher.build(ProcessLogEvent.PROCESS_STARTED).done();
+		logMatcher.build(ProcessLogEvent.CONDITION_EVALUATED).done();
+		logMatcher.build(ProcessLogEvent.CONDITION_MATCHED).done();
+		logMatcher.build(ProcessLogEvent.STATE_CHANGED).state(AmountProcessState.DECISION.name()).done();
 		
 		switch (endState) {
 		case NORMAL:
 			logMatcher.build(ProcessLogEvent.CONDITION_EVALUATED).state(AmountProcessState.DECISION.name()).done();
 			break;
 		case DECISION:
+		case APPROVAL:
 			logMatcher.build(ProcessLogEvent.CONDITION_EVALUATED).state(AmountProcessState.DECISION.name()).done();
 			logMatcher.build(ProcessLogEvent.CONDITION_EVALUATED).state(AmountProcessState.DECISION.name()).done();
 			break;
@@ -315,7 +324,7 @@ public class ProcessTest extends ProcessProcessingTestBase {
 		
 		System.out.println(process.entityType().getTypeSignature() + " logs:");
 		for (ProcessLogEntry entry: processLog.getEntries()) {
-			System.out.println(entry.getDate() + " " + entry.getEvent() + " at " + entry.getState() + ": " + entry.getMsg());
+			System.out.println(entry.getDate() + " " + entry.getEvent() + " at [" + entry.getState() + "]: " + entry.getMsg());
 		}
 		
 		if (logMatcher != null)  {
@@ -366,6 +375,14 @@ public class ProcessTest extends ProcessProcessingTestBase {
 		
 		Assertions.assertThat(activity).withFailMessage("waiting for process in ProcessActivity.waiting failed").isSameAs(ProcessActivity.waiting);
 		
+		GetProcessList getProcessList = GetProcessList.T.create();
+		getProcessList.getActivities().add(ProcessActivity.halted);
+		getProcessList.item(process);
+		ProcessList processList = getProcessList.eval(session).get();
+		
+		if (processList.getProcesses().stream().filter(p -> p.getId().equals(process.getId())).count() != 1)
+			Assertions.fail("Could not find halted process with GetProcessList");
+		
 		session.query().entity(process).refresh();
 		Assertions.assertThat(process.getState()).withFailMessage("unexpected state of process that reached ProcessActivity.waiting").isEqualTo(RoutingMaps.state(1, 1));
 		
@@ -397,7 +414,11 @@ public class ProcessTest extends ProcessProcessingTestBase {
 		
 		LogMatcher logMatcher = new LogMatcher();
 		
-		logMatcher.build(ProcessLogEvent.PROCESS_STARTED).state(initialState).done();
+		logMatcher.build(ProcessLogEvent.PROCESS_STARTED).done();
+		logMatcher.build(ProcessLogEvent.NEXT_STATE_SELECTED).done();
+		logMatcher.build(ProcessLogEvent.STATE_CHANGED).state(initialState).done();
+		
+		
 		logMatcher.build(ProcessLogEvent.PROCESSOR_EXECUTED).state(initialState).done();
 		logMatcher.build(ProcessLogEvent.NEXT_STATE_SELECTED).state(initialState).done();
 		logMatcher.build(ProcessLogEvent.STATE_CHANGED).state(waitState).done();
@@ -492,7 +513,10 @@ public class ProcessTest extends ProcessProcessingTestBase {
 		
 		LogMatcher logMatcher = new LogMatcher();
 		
-		logMatcher.build(ProcessLogEvent.PROCESS_STARTED).state(SimpleProcessState.ONE.name()).done();
+		logMatcher.build(ProcessLogEvent.PROCESS_STARTED).done();
+		logMatcher.build(ProcessLogEvent.CONDITION_MATCHED).done();
+		logMatcher.build(ProcessLogEvent.STATE_CHANGED).state(SimpleProcessState.ONE.name()).done();
+		
 		logMatcher.build(ProcessLogEvent.CONDITION_MATCHED).state(SimpleProcessState.ONE.name()).done();
 		logMatcher.build(ProcessLogEvent.STATE_CHANGED).state(SimpleProcessState.TWO.name()).done();
 		logMatcher.build(ProcessLogEvent.ERROR_IN_PROCESSOR).state(SimpleProcessState.TWO.name()).done();

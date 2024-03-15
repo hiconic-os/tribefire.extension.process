@@ -7,7 +7,7 @@
 // 
 // You should have received a copy of the GNU Lesser General Public License along with this library; See http://www.gnu.org/licenses/.
 // ============================================================================
-package tribefire.extension.process.api.model.ctrl;
+package tribefire.extension.process.api.model.analysis;
 
 import com.braintribe.model.generic.eval.EvalContext;
 import com.braintribe.model.generic.eval.Evaluator;
@@ -17,11 +17,11 @@ import com.braintribe.model.pagination.HasPagination;
 import com.braintribe.model.service.api.ServiceRequest;
 
 import tribefire.extension.process.api.model.ProcessRequest;
-import tribefire.extension.process.api.model.data.ProcessLog;
-import tribefire.extension.process.api.model.data.ProcessLogFilter;
+import tribefire.extension.process.api.model.data.ProcessFilter;
+import tribefire.extension.process.api.model.data.ProcessList;
 
-public interface GetProcessLog extends ProcessRequest, ProcessLogFilter, HasPagination {
-	EntityType<GetProcessLog> T = EntityTypes.T(GetProcessLog.class);
+public interface GetProcessList extends ProcessRequest, ProcessFilter, HasPagination {
+	EntityType<GetProcessList> T = EntityTypes.T(GetProcessList.class);
 	
 	String descending = "descending";
 	
@@ -29,5 +29,5 @@ public interface GetProcessLog extends ProcessRequest, ProcessLogFilter, HasPagi
 	void setDescending(boolean descending);
 	
 	@Override
-	EvalContext<? extends ProcessLog> eval(Evaluator<ServiceRequest> evaluator);
+	EvalContext<? extends ProcessList> eval(Evaluator<ServiceRequest> evaluator);
 }

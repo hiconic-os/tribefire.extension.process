@@ -6,7 +6,11 @@
         <version>[1.0,1.1)</version>
     </parent>
     <artifactId>process-wb-initializer</artifactId>
+<<<<<<< HEAD
     <version>1.0.3</version>
+=======
+    <version>1.0.6</version>
+>>>>>>> 5a7abc0 (fixed version to get into main)
     <properties/>
     <dependencies>
         <dependency>

@@ -29,7 +29,6 @@ import com.braintribe.gm.service.access.wire.common.contract.CommonAccessProcess
 import com.braintribe.gm.service.wire.common.contract.CommonServiceProcessingContract;
 import com.braintribe.model.deployment.Deployable;
 import com.braintribe.model.generic.reflection.EntityType;
-import com.braintribe.model.messaging.dmb.GmDmbMqMessaging;
 import com.braintribe.model.processing.lock.impl.SimpleCdlLocking;
 import com.braintribe.model.processing.securityservice.commons.provider.StaticUserSessionHolder;
 import com.braintribe.model.processing.securityservice.commons.scope.StandardUserSessionScoping;
@@ -43,7 +42,7 @@ import com.braintribe.model.usersession.UserSessionType;
 import com.braintribe.transport.messaging.api.MessagingConnectionProvider;
 import com.braintribe.transport.messaging.api.MessagingContext;
 import com.braintribe.transport.messaging.api.MessagingSessionProvider;
-import com.braintribe.transport.messaging.dbm.GmDmbMqConnectionProvider;
+import com.braintribe.transport.messaging.bq.BlockingQueueMessagingConnectionProvider;
 import com.braintribe.transport.messaging.impl.StandardMessagingSessionProvider;
 import com.braintribe.wire.api.annotation.Import;
 import com.braintribe.wire.api.annotation.Managed;
@@ -78,11 +77,10 @@ public class TestPlatformSpace implements TestPlatformContract {
 		bean.setMessagingConnectionProvider(messagingConnectionSupplier());
 		return bean;
 	}
-	
+
 	@Managed
 	private MessagingConnectionProvider<?> messagingConnectionSupplier() {
-		GmDmbMqConnectionProvider bean = new GmDmbMqConnectionProvider();
-		bean.setConnectionConfiguration(GmDmbMqMessaging.T.create());
+		BlockingQueueMessagingConnectionProvider bean = new BlockingQueueMessagingConnectionProvider();
 		bean.setMessagingContext(context());
 
 		return bean;

@@ -446,7 +446,7 @@ public class ProcessTest extends ProcessProcessingTestBase {
 		
 		session.query().entity(failedProcess).refresh();
 		
-		int logSeq = failedProcess.getLogSequence();
+		int logSeq = failedProcess.logSequence();
 		
 		failedProcess.setDoNotFail(true);
 		session.commit();
@@ -473,7 +473,7 @@ public class ProcessTest extends ProcessProcessingTestBase {
 		
 		session.query().entity(failedProcess).refresh();
 		
-		int logSeq = failedProcess.getLogSequence();
+		int logSeq = failedProcess.logSequence();
 		
 		RecoverProcess recoverProcess = RecoverProcess.T.create();
 		recoverProcess.setTransitionPhase(TransitionPhase.COMPLETED_TRANSITION);

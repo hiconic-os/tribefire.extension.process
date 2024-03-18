@@ -112,8 +112,16 @@ public interface ProcessItem extends ProcessControl, StandardStringIdentifiable 
 	 * not precise enough to represent that order. 
 	 */
 	@Unmodifiable
-	int getLogSequence();
-	void setLogSequence(int logSequence);
+	Integer getLogSequence();
+	void setLogSequence(Integer logSequence);
+	
+	default int logSequence() {
+		Integer seq = getLogSequence();
+		if (seq == null)
+			seq = 0;
+		
+		return seq;
+	}
 	
 	@Override @Unmodifiable ProcessActivity getActivity();
 	@Override @Unmodifiable String getState();

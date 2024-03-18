@@ -45,7 +45,7 @@ public abstract class LockingProcessRequestProcessor<R extends LockedProcessRequ
 			return itemMaybe.whyUnsatisfied().asMaybe();
 		
 		processItem = itemMaybe.get();
-		logSequence = processItem.getLogSequence();
+		logSequence = processItem.logSequence();
 	
 		return processWithLockedItem();
 	}
@@ -56,7 +56,7 @@ public abstract class LockingProcessRequestProcessor<R extends LockedProcessRequ
 	}
 	
 	protected void commitItem() {
-		int sequence = processItem.getLogSequence();
+		int sequence = processItem.logSequence();
 		
 		if (sequence != logSequence)
 			processItem.setLogSequence(logSequence);

@@ -493,34 +493,20 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 	private void handleError(ProcessLogEvent event, String msg, String details) {
 		log(event, msg);
 		
-		Node errorNode = transitionOracle.getErrorNode();
+		// halt process
+		processItem.setActivity(ProcessActivity.halted);
+		log(ProcessLogEvent.PROCESS_HALTED, "Process halted after an error. Take special care and continue with RecoverProcess.");
+		commitItem();
 		
-		if (errorNode != null) {
-			String fromState = processItem.getState();
-			String toState = (String)errorNode.getState();
-			
-			processOracle.transitionOracle(fromState, toState).initTransition(processItem);
-			
-			log(ProcessLogEvent.ERROR_TRANSITION, "transitioned from [" + fromState + "] to [" + toState + "] after an error");
-			
-			commitItem();
-			enqueueProcessContinuation();
-		}
-		else {
-			// halt process
-			processItem.setActivity(ProcessActivity.halted);
-			log(ProcessLogEvent.PROCESS_HALTED, "Process halted after an error. Take special care and continue with RecoverProcess.");
-			commitItem();
-			
-			// notify error handlers
-			notifyError();
-			
-			notifyProcess(ProcessActivity.halted);
-		}
+		// notify error handlers
+		notifyError();
+		
+		notifyProcess(ProcessActivity.halted);
 	}
 
 	private void notifyError() {
-		List<TransitionProcessor> errorHandlers = processOracle.processDefinition.getOnError();
+		
+		List<TransitionProcessor> errorHandlers = transitionOracle.getErrorHandlers();
 		
 		for (TransitionProcessor processorDeployable: errorHandlers) {
 			// do actual processor call

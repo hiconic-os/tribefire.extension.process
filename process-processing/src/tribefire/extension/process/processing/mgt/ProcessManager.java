@@ -63,6 +63,12 @@ import tribefire.extension.process.processing.mgt.processor.StartProcessProcesso
 import tribefire.extension.process.processing.mgt.processor.WaitForProcessProcessor;
 import tribefire.extension.process.processing.mgt.processor.WaitForProcessesProcessor;
 
+/*
+ * TODO: General Process Manager improvements
+ *   add ProcessItem.startedBy
+ *   add automatic filling of startedBy in StartProcessProcessor
+ *   think about migration of existing process with a custom startedBy property and the problem of access priviledges
+ */
 public class ProcessManager extends AbstractDispatchingAccessRequestProcessor<ProcessManagerRequest, Object> implements Worker, LifecycleAware, ProcessManagerConstants  {
 	
 	private static final Logger logger = Logger.getLogger(ProcessManager.class);

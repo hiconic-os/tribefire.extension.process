@@ -43,6 +43,8 @@ public enum ProcessLogEvent implements EnumBase {
 	
 	INTERNAL_ERROR(ProcessLogLevel.ERROR),
 	
+	ILLEGAL_TRANSITION_PHASE(ProcessLogLevel.ERROR),
+	
 	CUSTOM_EVENT;
 	
 	public static final EnumType T = EnumTypes.T(ProcessLogEvent.class);

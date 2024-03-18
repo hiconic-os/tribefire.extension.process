@@ -15,26 +15,26 @@ import com.braintribe.gm.model.reason.Maybe;
 import com.braintribe.model.query.SelectQuery;
 import com.braintribe.model.query.SelectQueryResult;
 
-import tribefire.extension.process.api.model.analysis.GetProcessLog;
-import tribefire.extension.process.api.model.data.ProcessLog;
-import tribefire.extension.process.data.model.log.ProcessLogEntry;
+import tribefire.extension.process.api.model.analysis.GetProcessList;
+import tribefire.extension.process.api.model.data.ProcessList;
+import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.processing.mgt.common.ProcessLogQueries;
 
-public class GetProcessLogProcessor extends ProcessRequestProcessor<GetProcessLog, ProcessLog> {
+public class GetProcessListProcessor extends ProcessRequestProcessor<GetProcessList, ProcessList> {
 
 	@Override
-	protected Maybe<ProcessLog> processValidatedRequest() {
-		SelectQuery entriesQuery = ProcessLogQueries.logEntries(itemId, request, request.getDescending(), request);
+	protected Maybe<ProcessList> processValidatedRequest() {
+		SelectQuery processesQuery = ProcessLogQueries.processes(request, request.getDescending(), request);
 		
-		SelectQueryResult result = systemSession().queryDetached().select(entriesQuery).result();
+		SelectQueryResult result = systemSession().queryDetached().select(processesQuery).result();
 		
-		ProcessLog processLog = ProcessLog.T.create();
-		processLog.setHasMore(result.getHasMore());
+		ProcessList processList = ProcessList.T.create();
+		processList.setHasMore(result.getHasMore());
 		
-		List<ProcessLogEntry> entries = processLog.getEntries();
+		List<ProcessItem> processes = processList.getProcesses();
 		
-		result.getResults().stream().map(e -> (ProcessLogEntry)e).forEach(entries::add);
+		result.getResults().stream().map(e -> (ProcessItem)e).forEach(processes::add);
 		
-		return Maybe.complete(processLog);
+		return Maybe.complete(processList);
 	}
 }

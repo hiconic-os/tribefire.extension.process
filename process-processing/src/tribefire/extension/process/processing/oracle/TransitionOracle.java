@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.braintribe.model.time.TimeSpan;
 
@@ -173,5 +174,9 @@ public class TransitionOracle {
 		}
 
 		return resolvedProcessors;
+	}
+
+	public List<TransitionProcessor> getErrorHandlers() {
+		return Stream.concat(toNode.getOnError().stream(), pd.getOnError().stream()).toList();
 	}
 }

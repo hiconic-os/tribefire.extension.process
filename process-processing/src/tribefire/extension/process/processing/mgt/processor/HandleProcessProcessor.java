@@ -9,6 +9,7 @@
 // ============================================================================
 package tribefire.extension.process.processing.mgt.processor;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -65,14 +66,6 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 					.toReason();
 		}
 		
-		TransitionPhase transitionPhase = processItem.getTransitionPhase();
-		
-		if (transitionPhase == null || transitionPhase == TransitionPhase.EXECUTING_PROCESSOR) {
-			return Reasons.build(UnexpectedProcessState.T) //
-					.text("ProcessItem " + processItem + " is in unexpected transition phase " + transitionPhase) //
-					.toReason();
-		}
-			
 		return null;
 	}
 	
@@ -95,7 +88,7 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 		Date now = new Date();
 	
 		// overdue check
-		if (now.before(overdueAt)) {
+		if (now.after(overdueAt)) {
 			processItem.setActivity(ProcessActivity.processing);
 			log(ProcessLogEvent.PROCESS_IS_OVERDUE, "process is overdue");
 			log(ProcessLogEvent.PROCESS_RESUMED, "process resumed after it was overdue");
@@ -137,15 +130,23 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 			return Reasons.build(UnexpectedProcessState.T).text("Unable to proceed with transitioning as it contradicts the process defintion") //
 					.cause(Reasons.build(EdgeNotFound.T).text("Edge from state " + processItem.getPreviousState() + " to state " + processItem.getState() + " not found in process " + processItem).toReason()).toMaybe();
 		}
+		
+		TransitionPhase transitionPhase = processItem.getTransitionPhase();
+		
+		if (transitionPhase == null) {
+			UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T).text("Transition phase must not be null").toReason();
+			return handleError(reason, ProcessLogEvent.ILLEGAL_TRANSITION_PHASE).asMaybe();
+		}
 
-		switch (processItem.getTransitionPhase()) {
+		switch (transitionPhase) {
 		case CHANGED_STATE: return handleTransitionProcessing();
 		case COMPLETED_PROCESSOR:  return handleTransitionProcessing();
 		case COMPLETED_TRANSITION: return continueProcess();
 		case DECOUPLED_INTERACTION: return doTransitionOrEnd();
 			
 		default:
-			throw new IllegalStateException("unexpected transition phase " + processItem.getTransitionPhase());
+			UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T).text("Illegal transition phase: " + transitionPhase).toReason();
+			return handleError(reason, ProcessLogEvent.ILLEGAL_TRANSITION_PHASE).asMaybe();
 		}
 	}
 
@@ -359,23 +360,47 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 		
 		List<ConditionalEdge> conditionalEdges = node.getConditionalEdges();
 		
-		for (ConditionalEdge conditionalEdge: conditionalEdges) {
-			Maybe<Boolean> matchMaybe = evaluateCondition(conditionalEdge);
-			
-			if (matchMaybe.isUnsatisfied()) {
-				return matchMaybe.whyUnsatisfied().asMaybe();
+		if (!conditionalEdges.isEmpty()) {
+		
+			for (ConditionalEdge conditionalEdge: conditionalEdges) {
+				Maybe<Boolean> matchMaybe = evaluateCondition(conditionalEdge);
+				
+				if (matchMaybe.isUnsatisfied()) {
+					return matchMaybe.whyUnsatisfied().asMaybe();
+				}
+				
+				if (matchMaybe.get()) {
+					nextState = (String) conditionalEdge.getTo().getState();
+					log(ProcessLogEvent.CONDITION_MATCHED, String.format("condition for state [%s] matched", nextState));
+					return Maybe.complete(nextState);
+				}
 			}
 			
-			if (matchMaybe.get()) {
-				nextState = (String) conditionalEdge.getTo().getState();
-				log(ProcessLogEvent.CONDITION_MATCHED, String.format("condition for state [%s] matched", nextState));
-				return Maybe.complete(nextState);
+			UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T).text("Could not determine next state from transition processor or conditional edges").toReason();
+			return handleError(reason, ProcessLogEvent.UNDETERMINED_NEXT_NODE).asMaybe();
+		}
+		else {
+			List<Edge> list = processOracle.standardEdgesFromState.getOrDefault(node.getState(), Collections.emptyList());
+			
+			switch (list.size()) {
+				case 0: {
+					UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T) //
+							.text("Default routing failed due to missing unconditional edge").toReason();
+					return handleError(reason, ProcessLogEvent.UNDETERMINED_NEXT_NODE).asMaybe();
+				}
+				case 1: {
+					Edge edge = list.get(0);
+					nextState = (String) edge.getTo().getState();
+					return Maybe.complete(nextState);
+				}
+				default: {
+					UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T) //
+							.text("Default routing ambiguity due to multiple unconditional edges").toReason();
+					return handleError(reason, ProcessLogEvent.UNDETERMINED_NEXT_NODE).asMaybe();
+				}
 			}
 		}
 		
-		UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T).text("Could not determine next state from transition processor or conditional edges").toReason();
-		
-		return handleError(reason, ProcessLogEvent.UNDETERMINED_NEXT_NODE).asMaybe();
 	}
 
 	private Maybe<Boolean> evaluateCondition(ConditionalEdge conditionalEdge) {
@@ -468,34 +493,20 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 	private void handleError(ProcessLogEvent event, String msg, String details) {
 		log(event, msg);
 		
-		Node errorNode = transitionOracle.getErrorNode();
+		// halt process
+		processItem.setActivity(ProcessActivity.halted);
+		log(ProcessLogEvent.PROCESS_HALTED, "Process halted after an error. Take special care and continue with RecoverProcess.");
+		commitItem();
 		
-		if (errorNode != null) {
-			String fromState = processItem.getState();
-			String toState = (String)errorNode.getState();
-			
-			processOracle.transitionOracle(fromState, toState).initTransition(processItem);
-			
-			log(ProcessLogEvent.ERROR_TRANSITION, "transitioned from [" + fromState + "] to [" + toState + "] after an error");
-			
-			commitItem();
-			enqueueProcessContinuation();
-		}
-		else {
-			// halt process
-			processItem.setActivity(ProcessActivity.halted);
-			log(ProcessLogEvent.PROCESS_HALTED, "process halted after an error");
-			commitItem();
-			
-			// notify error handlers
-			notifyError();
-			
-			notifyProcess(ProcessActivity.halted);
-		}
+		// notify error handlers
+		notifyError();
+		
+		notifyProcess(ProcessActivity.halted);
 	}
 
 	private void notifyError() {
-		List<TransitionProcessor> errorHandlers = processOracle.processDefinition.getOnError();
+		
+		List<TransitionProcessor> errorHandlers = transitionOracle.getErrorHandlers();
 		
 		for (TransitionProcessor processorDeployable: errorHandlers) {
 			// do actual processor call

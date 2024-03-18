@@ -14,11 +14,7 @@ You should have received a copy of the GNU Lesser General Public License along w
         <version>[1.0,1.1)</version>
     </parent>
     <artifactId>process-test-module</artifactId>
-<<<<<<< HEAD
-    <version>1.0.3</version>
-=======
     <version>1.0.6</version>
->>>>>>> 5a7abc0 (fixed version to get into main)
     <properties/>
     <licenses>
         <license>

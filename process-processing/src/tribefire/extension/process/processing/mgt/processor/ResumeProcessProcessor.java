@@ -21,6 +21,7 @@ import tribefire.extension.process.api.model.ctrl.ResumeProcessToState;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.log.ProcessLogEvent;
 import tribefire.extension.process.data.model.state.ProcessActivity;
+import tribefire.extension.process.data.model.state.TransitionPhase;
 import tribefire.extension.process.reason.model.EdgeNotFound;
 import tribefire.extension.process.reason.model.IllegalTransition;
 import tribefire.extension.process.reason.model.NodeNotFound;
@@ -55,6 +56,12 @@ public class ResumeProcessProcessor extends OracledProcessRequestProcessor<Resum
 		// reactivate process
 		processItem.setLastTransit(new Date());
 		processItem.setActivity(ProcessActivity.processing);
+		
+		// Temporary check and fix for null transition phase which may result from PE-PM-migrated processes
+		// In the migration case the logSequence must be null and can be used as a migration detector to validate the automatic fix 
+		if (processItem.getTransitionPhase() == null && processItem.getLogSequence() == null)
+			processItem.setTransitionPhase(TransitionPhase.DECOUPLED_INTERACTION);
+		
 		log(ProcessLogEvent.PROCESS_RESUMED, "process resumed");
 		
 		commitItem();

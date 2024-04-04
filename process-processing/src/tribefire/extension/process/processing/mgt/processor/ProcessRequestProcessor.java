@@ -21,6 +21,9 @@ import com.braintribe.model.meta.GmCustomType;
 import com.braintribe.model.processing.lock.api.Locking;
 import com.braintribe.model.processing.meta.oracle.EntityTypeOracle;
 import com.braintribe.model.processing.meta.oracle.ModelOracle;
+import com.braintribe.model.processing.query.building.EntityQueries;
+import com.braintribe.model.query.EntityQuery;
+import com.braintribe.model.query.conditions.ValueComparison;
 
 import tribefire.extension.process.api.model.ProcessRequest;
 import tribefire.extension.process.data.model.ProcessItem;
@@ -111,7 +114,9 @@ public abstract class ProcessRequestProcessor<R extends ProcessRequest, E> exten
 	}
 
 	protected Maybe<ProcessItem> getProcessItem() {
-		ProcessItem processItem = context().getSystemSession().query().entity(itemEntityType, itemId).find();
+		EntityQuery itemQuery = EntityQuery.create(itemEntityType).where(EntityQueries.eq(EntityQueries.property(ProcessItem.id), itemId));
+		
+		ProcessItem processItem = context().getSystemSession().query().entities(itemQuery).unique();
 		
 		if (processItem == null)
 			return Reasons.build(ProcessNotFound.T).text("ProcessItem with id [" + itemId + "] not found").toMaybe();

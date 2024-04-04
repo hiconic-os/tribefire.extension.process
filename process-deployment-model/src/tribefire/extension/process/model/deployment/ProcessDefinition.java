@@ -27,10 +27,10 @@ import com.braintribe.model.generic.reflection.EntityTypes;
 import com.braintribe.model.meta.GmEntityType;
 import com.braintribe.model.meta.GmProperty;
 import com.braintribe.model.meta.data.HasMetaData;
+import com.braintribe.model.resource.Resource;
 import com.braintribe.model.time.TimeSpan;
 
 @SelectiveInformation("${name}")
-
 public interface ProcessDefinition extends HasErrorNode, HasOverdueNode, DecoupledInteraction, HasMetaData {
 
 	EntityType<ProcessDefinition> T = EntityTypes.T(ProcessDefinition.class);
@@ -43,6 +43,7 @@ public interface ProcessDefinition extends HasErrorNode, HasOverdueNode, Decoupl
 	String triggerType = "triggerType";
 	String gracePeriod = "gracePeriod";
 	String name = "name";
+	String resources = "resources";
 	
 	Integer getMaximumNumbersOfRestarts();
 	void setMaximumNumbersOfRestarts(Integer maximumNumbersOfRestarts);
@@ -79,15 +80,6 @@ public interface ProcessDefinition extends HasErrorNode, HasOverdueNode, Decoupl
 	String getName();
 	void setName(String name);
 	
-	/**
-	 * extract the actually used {@link GmEntityType} to match  
-	 * @return - either the declaring type of the trigger prop or the given trigger type
-	 */
-	default GmEntityType triggerType() {
-		GmEntityType tigger = getTriggerType();
-		if (tigger != null) {
-			return tigger;
-		}
-		return getTrigger().getDeclaringType();
-	}
+	Set<Resource> getResources();
+	void setResources(Set<Resource> resources);
 }

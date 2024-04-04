@@ -31,7 +31,6 @@ public abstract class ProcessManagerRequestProcessor<R extends ProcessManagerReq
 	
 	protected R request;
 	protected ProcessManagerContext processManagerContext;
-	protected EntityType<? extends ProcessItem> itemEntityType;
 	
 	public void initProcessManagerContext(ProcessManagerContext processManagerContext) {
 		this.processManagerContext = processManagerContext;

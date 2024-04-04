@@ -16,11 +16,11 @@ import com.braintribe.model.generic.reflection.EntityTypes;
 import com.braintribe.model.pagination.HasPagination;
 import com.braintribe.model.service.api.ServiceRequest;
 
-import tribefire.extension.process.api.model.ProcessRequest;
+import tribefire.extension.process.api.model.ProcessManagerRequest;
 import tribefire.extension.process.api.model.data.ProcessFilter;
 import tribefire.extension.process.api.model.data.ProcessList;
 
-public interface GetProcessList extends ProcessRequest, ProcessFilter, HasPagination {
+public interface GetProcessList extends ProcessManagerRequest, ProcessFilter, HasPagination {
 	EntityType<GetProcessList> T = EntityTypes.T(GetProcessList.class);
 	
 	String descending = "descending";

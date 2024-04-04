@@ -20,10 +20,9 @@ import tribefire.extension.process.api.model.data.ProcessList;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.processing.mgt.common.ProcessLogQueries;
 
-public class GetProcessListProcessor extends ProcessRequestProcessor<GetProcessList, ProcessList> {
-
+public class GetProcessListProcessor extends ProcessManagerRequestProcessor<GetProcessList, ProcessList> {
 	@Override
-	protected Maybe<ProcessList> processValidatedRequest() {
+	public Maybe<ProcessList> processReasoned() {
 		SelectQuery processesQuery = ProcessLogQueries.processes(request, request.getDescending(), request);
 		
 		SelectQueryResult result = systemSession().queryDetached().select(processesQuery).result();

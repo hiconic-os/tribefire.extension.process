@@ -377,7 +377,6 @@ public class ProcessTest extends ProcessProcessingTestBase {
 		
 		GetProcessList getProcessList = GetProcessList.T.create();
 		getProcessList.getActivities().add(ProcessActivity.halted);
-		getProcessList.item(process);
 		ProcessList processList = getProcessList.eval(session).get();
 		
 		if (processList.getProcesses().stream().filter(p -> p.getId().equals(process.getId())).count() != 1)

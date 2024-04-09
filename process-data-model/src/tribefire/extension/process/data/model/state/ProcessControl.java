@@ -14,6 +14,7 @@ import java.util.Date;
 import com.braintribe.model.generic.GenericEntity;
 import com.braintribe.model.generic.annotation.Abstract;
 import com.braintribe.model.generic.annotation.meta.Indexed;
+import com.braintribe.model.generic.annotation.meta.Priority;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
@@ -36,27 +37,31 @@ public interface ProcessControl extends GenericEntity {
 	/**
 	 * The activity of the process which is used to differentiate unattended processes waiting or ended ones and to validate operations that are done to the process
 	 */
+	@Priority(10)
 	ProcessActivity getActivity();
 	void setActivity(ProcessActivity activity);
-
-	/**
-	 * The state in which the process was previously in. It is associated to a node defined in the graph of a process definition
-	 * Along with {@link #getState()} it defines the last edge in the graph that was taken by the routing. 
-	 */
-	String getPreviousState();
-	void setPreviousState(String previousState);
 
 	/**
 	 * The state in which the process is currently in. It is associated to a node defined in the graph of a process definition.
 	 * Along with {@link #getPreviousState()} it defines the last edge in the graph that was taken by the routing.  
 	 */
+	@Priority(9)
 	String getState();
 	void setState(String state);
+	
+	/**
+	 * The state in which the process was previously in. It is associated to a node defined in the graph of a process definition
+	 * Along with {@link #getState()} it defines the last edge in the graph that was taken by the routing. 
+	 */
+	@Priority(8)
+	String getPreviousState();
+	void setPreviousState(String previousState);
 
 	/**
 	 * The state that was required to be the next state for routing by either a transition processor or some decoupled interaction that resumed a waiting
 	 * process to a specific state.
 	 */
+	@Priority(7)
 	String getNextState();
 	void setNextState(String nextState);
 	
@@ -68,6 +73,7 @@ public interface ProcessControl extends GenericEntity {
 	 * This property keeps information about the fine grained progress after a state change in order to be able to continue
 	 * processes with the correct step after it got unattended (e.g by shutdown)
 	 */
+	@Priority(6)
 	TransitionPhase getTransitionPhase();
 	void setTransitionPhase(TransitionPhase transitionPhase);
 

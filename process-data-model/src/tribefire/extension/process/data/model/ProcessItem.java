@@ -80,6 +80,7 @@ public interface ProcessItem extends ProcessControl, StandardStringIdentifiable 
 	EntityType<ProcessItem> T = EntityTypes.T(ProcessItem.class);
 	
 	String startedAt = "startedAt";
+	String initiator = "initiator";
 	String lastTransit = "lastTransit";
 	String endedAt = "endedAt";
 	String overdueAt = "overdueAt";
@@ -91,6 +92,13 @@ public interface ProcessItem extends ProcessControl, StandardStringIdentifiable 
 	@Unmodifiable
 	Date getStartedAt();
 	void setStartedAt(Date startedAt);
+	
+	/**
+	 * The initiator of the process.
+	 */
+	@Unmodifiable
+	String getInitiator();
+	void setInitiator(String initiator);
 
 	/**
 	 * The date of the last transition handling given by state changes, processor executions

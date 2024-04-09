@@ -26,7 +26,6 @@ import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.log.ProcessLogEvent;
 import tribefire.extension.process.data.model.state.ProcessActivity;
 import tribefire.extension.process.data.model.state.TransitionPhase;
-import tribefire.extension.process.model.deployment.Edge;
 import tribefire.extension.process.model.deployment.Node;
 import tribefire.extension.process.model.deployment.StandardNode;
 import tribefire.extension.process.reason.model.EdgeNotFound;
@@ -73,10 +72,14 @@ public class StartProcessProcessor extends OracledProcessRequestProcessor<StartP
 		if (toState != null)
 			processItem.setNextState(toState);
 		
+		Date now = new Date();
+		
 		// phase reset
 		processItem.setTransitionPhase(TransitionPhase.CHANGED_STATE);
 		processItem.setTransitionProcessorId(null);
-		processItem.setStartedAt(processItem.getLastTransit());
+		processItem.setStartedAt(now);
+		processItem.setInitiator(getInitiator());
+		processItem.setLastTransit(now);
 		processItem.setActivity(ProcessActivity.processing);
 		
 		determineOverdue();
@@ -98,6 +101,14 @@ public class StartProcessProcessor extends OracledProcessRequestProcessor<StartP
 		enqueueProcessContinuation();
 		
 		return Maybe.complete(Neutral.NEUTRAL);
+	}
+
+	private String getInitiator() {
+		String requestorUserName = context().getRequestorUserName();
+		
+		return requestorUserName != null 
+				? requestorUserName 
+				: session().getSessionAuthorization().getUserName();
 	}
 
 	private void determineOverdue() {

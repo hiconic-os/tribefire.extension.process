@@ -376,28 +376,25 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 				}
 			}
 			
-			UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T).text("Could not determine next state from transition processor or conditional edges").toReason();
-			return handleError(reason, ProcessLogEvent.UNDETERMINED_NEXT_NODE).asMaybe();
 		}
-		else {
-			List<Edge> list = processOracle.standardEdgesFromState.getOrDefault(node.getState(), Collections.emptyList());
-			
-			switch (list.size()) {
-				case 0: {
-					UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T) //
-							.text("Default routing failed due to missing unconditional edge").toReason();
-					return handleError(reason, ProcessLogEvent.UNDETERMINED_NEXT_NODE).asMaybe();
-				}
-				case 1: {
-					Edge edge = list.get(0);
-					nextState = (String) edge.getTo().getState();
-					return Maybe.complete(nextState);
-				}
-				default: {
-					UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T) //
-							.text("Default routing ambiguity due to multiple unconditional edges").toReason();
-					return handleError(reason, ProcessLogEvent.UNDETERMINED_NEXT_NODE).asMaybe();
-				}
+		
+		List<Edge> list = processOracle.standardEdgesFromState.getOrDefault(node.getState(), Collections.emptyList());
+		
+		switch (list.size()) {
+			case 0: {
+				UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T) //
+						.text("Default routing failed due to missing unconditional edge").toReason();
+				return handleError(reason, ProcessLogEvent.UNDETERMINED_NEXT_NODE).asMaybe();
+			}
+			case 1: {
+				Edge edge = list.get(0);
+				nextState = (String) edge.getTo().getState();
+				return Maybe.complete(nextState);
+			}
+			default: {
+				UnexpectedProcessState reason = Reasons.build(UnexpectedProcessState.T) //
+						.text("Default routing failed due to ambiguity of multiple unconditional edges").toReason();
+				return handleError(reason, ProcessLogEvent.UNDETERMINED_NEXT_NODE).asMaybe();
 			}
 		}
 		
@@ -518,11 +515,9 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 			try {
 				processor.process(tpContext);
 				
-				PersistenceGmSession session = tpContext.getSession();
-				if (session.getTransaction().hasManipulations())
-					session.commit();
-				
 				log(ProcessLogEvent.PROCESSOR_EXECUTED, processorInfo + " executed as error handler", transitionOracle);
+				
+				systemSession().commit();
 			}
 			catch (Exception e) {
 				logger.error("error while executing transition processor " + processorInfo, e);

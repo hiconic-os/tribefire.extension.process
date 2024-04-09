@@ -29,7 +29,7 @@ import tribefire.extension.process.data.model.ProcessItem;
  * 
  * @author Dirk Scheffler
  */
-@SelectiveInformation("${event} [${state}]")
+@SelectiveInformation("${event}: ${msg}")
 @ToStringInformation("${date} ${event} at [${state}]: ${msg}")
 public interface ProcessLogEntry extends GenericEntity {
 

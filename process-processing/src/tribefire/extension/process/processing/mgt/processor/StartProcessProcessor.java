@@ -17,6 +17,7 @@ import com.braintribe.gm.model.reason.Reason;
 import com.braintribe.gm.model.reason.Reasons;
 import com.braintribe.gm.model.reason.essential.InternalError;
 import com.braintribe.logging.Logger;
+import com.braintribe.model.processing.session.api.persistence.auth.SessionAuthorization;
 import com.braintribe.model.service.api.result.Neutral;
 import com.braintribe.model.time.TimeSpan;
 
@@ -106,9 +107,15 @@ public class StartProcessProcessor extends OracledProcessRequestProcessor<StartP
 	private String getInitiator() {
 		String requestorUserName = context().getRequestorUserName();
 		
-		return requestorUserName != null 
-				? requestorUserName 
-				: session().getSessionAuthorization().getUserName();
+		if (requestorUserName != null)
+			return requestorUserName;
+		
+		SessionAuthorization sessionAuthorization = session().getSessionAuthorization();
+		
+		if (sessionAuthorization != null)
+			return sessionAuthorization.getUserName();
+		
+		return "<unauthenticated>";
 	}
 
 	private void determineOverdue() {

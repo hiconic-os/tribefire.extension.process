@@ -24,8 +24,6 @@ import com.braintribe.model.generic.annotation.SelectiveInformation;
 import com.braintribe.model.generic.annotation.meta.Mandatory;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
-import com.braintribe.model.meta.GmEntityType;
-import com.braintribe.model.meta.GmProperty;
 import com.braintribe.model.meta.data.HasMetaData;
 import com.braintribe.model.resource.Resource;
 import com.braintribe.model.time.TimeSpan;
@@ -39,8 +37,6 @@ public interface ProcessDefinition extends HasErrorNode, HasOverdueNode, Decoupl
 	String elements = "elements";
 	String onTransit = "onTransit";
 	String onError = "onError";
-	String trigger = "trigger";
-	String triggerType = "triggerType";
 	String gracePeriod = "gracePeriod";
 	String name = "name";
 	String resources = "resources";
@@ -56,22 +52,6 @@ public interface ProcessDefinition extends HasErrorNode, HasOverdueNode, Decoupl
 	
 	List<TransitionProcessor> getOnError();
 	void setOnError(List<TransitionProcessor> onError);
-	
-	/**
-	 * @deprecated ignored as a ProcessItem is started with StartProcess from process-api-model and the ProcessItem already declares the state property
-	 */
-	@Deprecated
-	GmProperty getTrigger();
-	void setTrigger(GmProperty trigger);
-		
-	/**
-	 * optional : if null, declaring type of {@link #getTrigger()} is used
-	 * @return - the {@link GmEntityType} to match
-	 * @deprecated ignored as a ProcessItem is now linked with the ManageWithProcess metadata
-	 */
-	@Deprecated
-	GmEntityType getTriggerType();
-	void setTriggerType( GmEntityType triggerType);
 	
 	TimeSpan getGracePeriod();
 	void setGracePeriod(TimeSpan gracePeriod);

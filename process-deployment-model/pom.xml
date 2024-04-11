@@ -47,7 +47,7 @@ You should have received a copy of the GNU Lesser General Public License along w
         </dependency>
         <dependency>
             <groupId>com.braintribe.gm</groupId>
-            <artifactId>meta-model</artifactId>
+            <artifactId>meta-data-model</artifactId>
             <version>${V.com.braintribe.gm}</version>
             <?tag asset ?>
         </dependency>

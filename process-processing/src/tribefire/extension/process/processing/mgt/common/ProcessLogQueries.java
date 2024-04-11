@@ -28,6 +28,7 @@ import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.log.ProcessLogEntry;
 import tribefire.extension.process.data.model.log.ProcessLogEvent;
 import tribefire.extension.process.data.model.log.ProcessLogLevel;
+import tribefire.extension.process.data.model.state.ProcessActivity;
 
 public class ProcessLogQueries extends SelectQueries {
 	public static SelectQuery processes(ProcessFilter processFilter, boolean descending, HasPagination pagination) {
@@ -111,10 +112,23 @@ public class ProcessLogQueries extends SelectQueries {
 		case 0:
 			break;
 		case 1:
-			conditions.add(in(property(p, ProcessItem.id), itemIds));
+			conditions.add(eq(property(p, ProcessItem.id), itemIds.iterator().next()));
 			break;
 		default:
-			conditions.add(eq(property(p, ProcessItem.id), itemIds.iterator().next()));
+			conditions.add(in(property(p, ProcessItem.id), itemIds));
+			break;
+		}
+		
+		Set<ProcessActivity> activities = filter.getActivities();
+		
+		switch (activities.size()) {
+		case 0:
+			break;
+		case 1:
+			conditions.add(eq(property(p, ProcessItem.activity), activities.iterator().next()));
+			break;
+		default:
+			conditions.add(in(property(p, ProcessItem.activity), activities));
 			break;
 		}
 		
@@ -140,38 +154,6 @@ public class ProcessLogQueries extends SelectQueries {
 			return Optional.empty();
 		
 		return Optional.of(lt(property(s, propertyName), date));
-	}
-	
-	private static Condition logEntriesCondition(From e, String itemId, ProcessLogFilter filter) {
-		Conjunction condition = Conjunction.T.create();
-
-		condition.add(eq(property(e, ProcessLogEntry.itemId), itemId));
-
-		Set<ProcessLogEvent> events = filter.getEvents();
-
-		if (!events.isEmpty()) {
-			condition.add(in(property(e, ProcessLogEntry.event), events));
-		}
-
-		Set<ProcessLogLevel> levels = filter.getLevels();
-
-		if (!levels.isEmpty()) {
-			condition.add(in(property(e, ProcessLogEntry.level), levels));
-		}
-
-		String messagePattern = filter.getMessagePattern();
-
-		if (messagePattern != null) {
-			condition.add(like(property(e, ProcessLogEntry.msg), messagePattern));
-		}
-
-		afterDateCondition(e, filter.getAfter(), ProcessLogEntry.date).ifPresent(condition::add);
-		beforeDateCondition(e, filter.getBefore(), ProcessLogEntry.date).ifPresent(condition::add);
-
-		if (condition.getOperands().size() == 1)
-			return condition.getOperands().get(1);
-		else
-			return condition;
 	}
 	
 	private static void addlogFilterCondition(From e, ProcessLogFilter filter, Conjunction conditions) {

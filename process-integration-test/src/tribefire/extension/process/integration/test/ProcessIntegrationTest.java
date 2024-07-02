@@ -20,13 +20,8 @@ import com.braintribe.model.deployment.Deployable;
 import com.braintribe.model.deployment.Module;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.meta.GmMetaModel;
-import com.braintribe.model.processing.meta.configuration.ConfigurationModels;
 import com.braintribe.model.processing.meta.editor.BasicModelMetaDataEditor;
-import com.braintribe.model.processing.query.building.EntityQueries;
 import com.braintribe.model.processing.session.api.persistence.PersistenceGmSession;
-import com.braintribe.model.query.EntityQuery;
-import com.braintribe.model.query.SelectQueryResult;
-import com.braintribe.model.user.Identity;
 import com.braintribe.model.user.Role;
 import com.braintribe.model.user.User;
 import com.braintribe.product.rat.imp.ImpApi;
@@ -40,15 +35,7 @@ import tribefire.extension.process._ProcessTestModel_;
 import tribefire.extension.process.initializer.exports.ProcessInitializerExportsContract;
 import tribefire.extension.process.integration.test.pd.wire.IntegrationTestProcessDefinitionWireModule;
 import tribefire.extension.process.integration.test.pd.wire.contract.IntegrationTestProcessDefinitionContract;
-import tribefire.extension.process.model.deployment.ConditionProcessor;
-import tribefire.extension.process.model.deployment.TransitionProcessor;
 import tribefire.extension.process.processing.base.pd.wire.contract.TestProcessRequirementsContract;
-import tribefire.extension.process.processing.experts.FailingByExceptionTransitionProcessor;
-import tribefire.extension.process.processing.experts.FailingByReasonTransitionProcessor;
-import tribefire.extension.process.processing.experts.Lt10000ConditionProcessor;
-import tribefire.extension.process.processing.experts.Lt1000ConditionProcessor;
-import tribefire.extension.process.processing.experts.SelfRoutingTransitionProcessor;
-import tribefire.extension.process.processing.experts.StateTaggingTransitionProcessor;
 import tribefire.extension.process.processing.experts.TestProcessor;
 
 /**
@@ -88,12 +75,12 @@ public class ProcessIntegrationTest extends AbstractTribefireQaTest {
 			// wiring for separate accesses for data and auditing //
 			////////////////////////////////////////////////////////
 			
-			GmMetaModel configuredDataModel = ConfigurationModels.create(session, _ProcessDataModel_.reflection.groupId(), "process-test-data-model-" + uuid) //
+			GmMetaModel configuredDataModel = new ConfigurationModelBuilderManagedImpl(session, _ProcessDataModel_.reflection.groupId(), "process-test-data-model-" + uuid) //
 				.addDependencyByGlobalId(ProcessInitializerExportsContract.CONFIGURED_DATA_MODEL_ID) //
 				.addDependency(_ProcessTestModel_.reflection)
 				.get();
-			
-			GmMetaModel configuredApiModel = ConfigurationModels.create(session, _ProcessDataModel_.reflection.groupId(), "process-test-api-model-" + uuid)
+
+			GmMetaModel configuredApiModel = new ConfigurationModelBuilderManagedImpl(session, _ProcessDataModel_.reflection.groupId(), "process-test-api-model-" + uuid)
 					.addDependencyByGlobalId(ProcessInitializerExportsContract.CONFIGURED_DATA_MODEL_ID).get();
 	
 			String dataAccessExternalId = "access.test.process.data-" + uuid;

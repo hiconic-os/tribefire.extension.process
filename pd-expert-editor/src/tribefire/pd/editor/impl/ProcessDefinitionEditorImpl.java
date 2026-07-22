@@ -27,45 +27,78 @@ import com.braintribe.model.generic.session.GmSession;
 import tribefire.extension.process.model.deployment.ConditionalEdge;
 import tribefire.extension.process.model.deployment.Edge;
 import tribefire.extension.process.model.deployment.ProcessDefinition;
+import tribefire.extension.process.model.deployment.ProcessElement;
 import tribefire.extension.process.model.deployment.StandardNode;
 import tribefire.pd.editor.api.ProcessDefinitionEditor;
 
 public class ProcessDefinitionEditorImpl implements ProcessDefinitionEditor {
 	private GmSession session;
-	
+
 	private Map<String, StandardNode> nodes = new HashMap<>();
 	private Map<Pair<String, String>, Edge> edges = new HashMap<>();
 	private Map<ConditionalEdgeKey, ConditionalEdge> conditionalEdges = new HashMap<>();
 
 	private ProcessDefinition definition;
-	
+
+	public ProcessDefinitionEditorImpl(ProcessDefinition processDefinition) {
+		this.definition = processDefinition;
+		this.session = processDefinition.session();
+
+		for (ProcessElement element : definition.getElements()) {
+			switch (element) {
+				case ConditionalEdge ce -> registerConditionalEdge(ce);
+				case Edge e -> registerEdge(e);
+				case StandardNode n -> registerStandardNode(n);
+				default -> throw new IllegalArgumentException("Unexpected value: " + element);
+			}
+		}
+	}
+
 	public ProcessDefinitionEditorImpl(GmSession session) {
 		this.session = session;
 		this.definition = create(ProcessDefinition.T);
 	}
-	
+
 	public ProcessDefinitionEditorImpl() {
-		this(null);
+		this((GmSession) null);
 	}
-	
-	
+
+	private void registerStandardNode(StandardNode n) {
+		String key = String.valueOf(n.getState());
+		nodes.put(key, n);
+	}
+
+	private void registerConditionalEdge(ConditionalEdge ce) {
+		String from = String.valueOf(ce.getFrom().getState());
+		String to = String.valueOf(ce.getTo().getState());
+		String name = ce.getName().value();
+		ConditionalEdgeKey key = new ConditionalEdgeKey(from, to, name);
+		conditionalEdges.put(key, ce);
+	}
+	private void registerEdge(Edge ce) {
+		String from = String.valueOf(ce.getFrom().getState());
+		String to = String.valueOf(ce.getTo().getState());
+		Pair<String, String> key = new Pair<>(from, to);
+		edges.put(key, ce);
+	}
+
 	private static class ConditionalEdgeKey {
 		String from;
 		String to;
 		String name;
-		
+
 		public ConditionalEdgeKey(String from, String to, String name) {
 			super();
 			this.from = from;
 			this.to = to;
 			this.name = name;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			return Objects.hash(from, name, to);
 		}
-		
+
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -78,7 +111,6 @@ public class ProcessDefinitionEditorImpl implements ProcessDefinitionEditor {
 			return Objects.equals(from, other.from) && Objects.equals(name, other.name) && Objects.equals(to, other.to);
 		}
 	}
-	
 
 	@Override
 	public ProcessDefinition definition() {
@@ -93,18 +125,23 @@ public class ProcessDefinitionEditorImpl implements ProcessDefinitionEditor {
 	}
 
 	@Override
+	public Edge lookupEdge(String from, String to) {
+		return edges.get(Pair.of(from, to));
+	}
+
+	@Override
 	public Edge edge(String from, String to, String name) {
 		return edges.computeIfAbsent(Pair.of(from, to), k -> {
 			Edge edge = create(Edge.T);
 			StandardNode fromNode = acquireNode(from);
 			StandardNode toNode = acquireNode(to);
-			
+
 			edge.setFrom(fromNode);
 			edge.setTo(toNode);
 			edge.setName(LocalizedString.create(name));
-			
+
 			definition().getElements().add(edge);
-			
+
 			return edge;
 		});
 	}
@@ -115,19 +152,19 @@ public class ProcessDefinitionEditorImpl implements ProcessDefinitionEditor {
 			ConditionalEdge edge = create(ConditionalEdge.T);
 			StandardNode fromNode = acquireNode(from);
 			StandardNode toNode = acquireNode(to);
-			
+
 			edge.setFrom(fromNode);
 			edge.setTo(toNode);
 			edge.setName(LocalizedString.create(name));
-			
+
 			definition().getElements().add(edge);
-			
+
 			fromNode.getConditionalEdges().add(edge);
-			
+
 			return edge;
 		});
 	}
-	
+
 	public StandardNode acquireNode(String state) {
 		return nodes.computeIfAbsent(state, k -> {
 			StandardNode standardNode = create(StandardNode.T);
@@ -146,18 +183,27 @@ public class ProcessDefinitionEditorImpl implements ProcessDefinitionEditor {
 	public void overdueEdge(String from, String to) {
 		acquireNode(from).setOverdueNode(acquireNode(to));
 	}
-	
+
 	private <T extends GenericEntity> T create(EntityType<T> type) {
-		return session != null? session.create(type): type.create();
+		return session != null ? session.create(type) : type.create();
 	}
-	
+
 	@Override
 	public Stream<StandardNode> acquireNodes(String... states) {
 		return Stream.of(states).map(this::acquireNode);
 	}
-	
+
 	@Override
 	public Stream<StandardNode> acquireNodes(Enum<?>... enumConstants) {
 		return Stream.of(enumConstants).map(this::acquireNode);
+	}
+
+	@Override
+	public void unlinkEdge(String from, String to) {
+		Pair<String, String> key = new Pair<>(from, to);
+		Edge edge = edges.remove(key);
+		edge.setFrom(null);
+		edge.setTo(null);
+		definition.getElements().remove(edge);
 	}
 }

@@ -25,36 +25,66 @@ import tribefire.pd.editor.impl.ProcessDefinitionEditorImpl;
 
 public interface ProcessDefinitionEditor {
 	ProcessDefinition definition();
-	
-	default StandardNode rootNode() { return acquireNode((String)null); }
-	default StandardNode acquireNode(Enum<?> state) {  return acquireNode(state.name()); }
+
+	default StandardNode rootNode() {
+		return acquireNode((String) null);
+	}
+	default StandardNode acquireNode(Enum<?> state) {
+		return acquireNode(state.name());
+	}
 	StandardNode acquireNode(String state);
 	StandardNode node(String state, String name);
-	default StandardNode node(Enum<?> state, String name) { return node(state.name(), name); }
-	
+	default StandardNode node(Enum<?> state, String name) {
+		return node(state.name(), name);
+	}
+
 	Edge edge(String from, String to, String name);
-	default Edge edge(Enum<?> from, Enum<?> to, String name) { return edge(from.name(), to.name(), name); }
-	default Edge rootEdge(Enum<?> to, String name) { return edge(null, to.name(), name); }
-	default Edge rootEdge(String to, String name) { return edge(null, to, name); }
-	
+	default Edge edge(Enum<?> from, Enum<?> to, String name) {
+		return edge(from.name(), to.name(), name);
+	}
+	default Edge rootEdge(Enum<?> to, String name) {
+		return edge(null, to.name(), name);
+	}
+	default Edge rootEdge(String to, String name) {
+		return edge(null, to, name);
+	}
+
 	ConditionalEdge conditionalEdge(String from, String to, String name);
-	default ConditionalEdge conditionalEdge(Enum<?> from, Enum<?> to, String name) { return conditionalEdge(from.name(), to.name(), name); }
-	default ConditionalEdge conditionalRootEdge(Enum<?> to, String name) { return conditionalEdge(null, to.name(), name); }
-	default ConditionalEdge conditionalRootEdge(String to, String name) { return conditionalEdge(null, to, name); }
-	
+	default ConditionalEdge conditionalEdge(Enum<?> from, Enum<?> to, String name) {
+		return conditionalEdge(from.name(), to.name(), name);
+	}
+	default ConditionalEdge conditionalRootEdge(Enum<?> to, String name) {
+		return conditionalEdge(null, to.name(), name);
+	}
+	default ConditionalEdge conditionalRootEdge(String to, String name) {
+		return conditionalEdge(null, to, name);
+	}
+
 	void errorEdge(String from, String to);
-	default void errorEdge(Enum<?> from, Enum<?> to) { errorEdge(from.name(), to.name()); }
+	default void errorEdge(Enum<?> from, Enum<?> to) {
+		errorEdge(from.name(), to.name());
+	}
 	void overdueEdge(String from, String to);
-	default void overdueEdge(Enum<?> from, Enum<?> to) { overdueEdge(from.name(), to.name()); }
-	
+	default void overdueEdge(Enum<?> from, Enum<?> to) {
+		overdueEdge(from.name(), to.name());
+	}
+
 	Stream<StandardNode> acquireNodes(Enum<?>... enumConstants);
 	Stream<StandardNode> acquireNodes(String... states);
-	
+
 	static ProcessDefinitionEditor create(GmSession session) {
 		return new ProcessDefinitionEditorImpl(session);
 	}
-	
+
 	static ProcessDefinitionEditor create() {
 		return new ProcessDefinitionEditorImpl();
 	}
+
+	static ProcessDefinitionEditor extend(ProcessDefinition processDefinition) {
+		return new ProcessDefinitionEditorImpl(processDefinition);
+	}
+
+	Edge lookupEdge(String from, String to);
+
+	void unlinkEdge(String from, String to);
 }

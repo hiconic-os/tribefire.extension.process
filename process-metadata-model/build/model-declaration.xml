@@ -5,7 +5,7 @@
 
   <groupId>tribefire.extension.process</groupId>
   <artifactId>process-metadata-model</artifactId>
-  <version>1.0.1-rc</version>
+  <version>1.0.1</version>
   <hash>ab000c88097dbadd871fbf58b9e5cd82</hash>
 
   <dependencies>

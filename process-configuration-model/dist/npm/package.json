@@ -1,0 +1,23 @@
+{
+  "name": "@dev.hiconic/tf.extension.process_process-configuration-model",
+  "version": "1.0.1",
+  "main": "dist/process-configuration-model.js",
+  "types": "dist/process-configuration-model.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hiconic-os/tribefire.extension.process.git.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@dev.hiconic/gm_root-model": "2.0.x",
+    "@dev.hiconic/gm_meta-model": "2.0.x",
+    "@dev.hiconic/gm_time-model": "2.0.x",
+    "@dev.hiconic/gm_gm-core-api": "2.0.x"
+  }
+}

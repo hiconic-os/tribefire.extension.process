@@ -32,6 +32,7 @@ limitations under the License.
         <V.tribefire.extension.process>[1.0,1.1)</V.tribefire.extension.process>
         <V.tribefire.extension.scripting>[1.0,1.1)</V.tribefire.extension.scripting>
         <V.tribefire.setup.classic.env>[3.0,3.1)</V.tribefire.setup.classic.env>
+        <V.hiconic.platform.reflex>[1.0,1.1)</V.hiconic.platform.reflex>
         <V.javax.servlet>3.0.1</V.javax.servlet>
     </properties>
     <licenses>

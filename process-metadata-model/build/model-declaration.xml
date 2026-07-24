@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model-declaration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="model-declaration-1.0.xsd">
+
+  <name>tribefire.extension.process:process-metadata-model</name>
+
+  <groupId>tribefire.extension.process</groupId>
+  <artifactId>process-metadata-model</artifactId>
+  <version>1.0.1-rc</version>
+  <hash>ab000c88097dbadd871fbf58b9e5cd82</hash>
+
+  <dependencies>
+    <dependency>com.braintribe.gm:meta-model</dependency>
+  </dependencies>
+
+  <types>
+    <type>tribefire.extension.process.model.meta.ManageProcessWith</type>
+  </types>
+
+</model-declaration>

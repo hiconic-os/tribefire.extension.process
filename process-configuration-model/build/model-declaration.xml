@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model-declaration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="model-declaration-1.0.xsd">
+
+  <name>tribefire.extension.process:process-configuration-model</name>
+
+  <groupId>tribefire.extension.process</groupId>
+  <artifactId>process-configuration-model</artifactId>
+  <version>1.0.1-rc</version>
+  <hash>135f7d6c0c6521824aca23099f808d7f</hash>
+
+  <dependencies>
+    <dependency>com.braintribe.gm:root-model</dependency>
+    <dependency>com.braintribe.gm:meta-model</dependency>
+    <dependency>com.braintribe.gm:time-model</dependency>
+  </dependencies>
+
+  <types>
+    <type>tribefire.extension.process.model.configuration.ConditionProcessorReference</type>
+    <type>tribefire.extension.process.model.configuration.DecoupledInteraction</type>
+    <type>tribefire.extension.process.model.configuration.Edge</type>
+    <type>tribefire.extension.process.model.configuration.Node</type>
+    <type>tribefire.extension.process.model.configuration.ProcessDefinition</type>
+    <type>tribefire.extension.process.model.configuration.ProcessDefinitionsConfiguration</type>
+    <type>tribefire.extension.process.model.configuration.TransitionProcessorReference</type>
+  </types>
+
+</model-declaration>

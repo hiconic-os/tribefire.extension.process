@@ -1,0 +1,21 @@
+{
+  "name": "@dev.hiconic/tf.extension.process_process-metadata-model",
+  "version": "1.0.1",
+  "main": "dist/process-metadata-model.js",
+  "types": "dist/process-metadata-model.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hiconic-os/tribefire.extension.process.git.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@dev.hiconic/gm_meta-model": "2.0.x",
+    "@dev.hiconic/gm_gm-core-api": "2.0.x"
+  }
+}

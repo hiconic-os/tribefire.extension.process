@@ -41,15 +41,15 @@ public class ProcessDefinitionEditorImpl implements ProcessDefinitionEditor {
 	private ProcessDefinition definition;
 
 	public ProcessDefinitionEditorImpl(ProcessDefinition processDefinition) {
-		this.definition = processDefinition;
+		this.definition = Objects.requireNonNull(processDefinition, "processDefinition");
 		this.session = processDefinition.session();
 
 		for (ProcessElement element : definition.getElements()) {
 			switch (element) {
-				case ConditionalEdge ce -> registerConditionalEdge(ce);
-				case Edge e -> registerEdge(e);
-				case StandardNode n -> registerStandardNode(n);
-				default -> throw new IllegalArgumentException("Unexpected value: " + element);
+				case ConditionalEdge conditionalEdge -> registerConditionalEdge(conditionalEdge);
+				case Edge edge -> registerEdge(edge);
+				case StandardNode node -> registerStandardNode(node);
+				default -> throw new IllegalArgumentException("Unexpected process element: " + element);
 			}
 		}
 	}
@@ -63,23 +63,21 @@ public class ProcessDefinitionEditorImpl implements ProcessDefinitionEditor {
 		this((GmSession) null);
 	}
 
-	private void registerStandardNode(StandardNode n) {
-		String key = String.valueOf(n.getState());
-		nodes.put(key, n);
+	private void registerStandardNode(StandardNode node) {
+		nodes.put(String.valueOf(node.getState()), node);
 	}
 
-	private void registerConditionalEdge(ConditionalEdge ce) {
-		String from = String.valueOf(ce.getFrom().getState());
-		String to = String.valueOf(ce.getTo().getState());
-		String name = ce.getName().value();
-		ConditionalEdgeKey key = new ConditionalEdgeKey(from, to, name);
-		conditionalEdges.put(key, ce);
+	private void registerConditionalEdge(ConditionalEdge edge) {
+		String from = String.valueOf(edge.getFrom().getState());
+		String to = String.valueOf(edge.getTo().getState());
+		String name = edge.getName().value();
+		conditionalEdges.put(new ConditionalEdgeKey(from, to, name), edge);
 	}
-	private void registerEdge(Edge ce) {
-		String from = String.valueOf(ce.getFrom().getState());
-		String to = String.valueOf(ce.getTo().getState());
-		Pair<String, String> key = new Pair<>(from, to);
-		edges.put(key, ce);
+
+	private void registerEdge(Edge edge) {
+		String from = String.valueOf(edge.getFrom().getState());
+		String to = String.valueOf(edge.getTo().getState());
+		edges.put(Pair.of(from, to), edge);
 	}
 
 	private static class ConditionalEdgeKey {
@@ -200,8 +198,10 @@ public class ProcessDefinitionEditorImpl implements ProcessDefinitionEditor {
 
 	@Override
 	public void unlinkEdge(String from, String to) {
-		Pair<String, String> key = new Pair<>(from, to);
-		Edge edge = edges.remove(key);
+		Edge edge = edges.remove(Pair.of(from, to));
+		if (edge == null)
+			throw new IllegalArgumentException("Unknown process edge: " + from + " -> " + to);
+
 		edge.setFrom(null);
 		edge.setTo(null);
 		definition.getElements().remove(edge);

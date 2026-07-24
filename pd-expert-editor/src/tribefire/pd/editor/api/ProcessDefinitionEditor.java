@@ -80,6 +80,7 @@ public interface ProcessDefinitionEditor {
 		return new ProcessDefinitionEditorImpl();
 	}
 
+	/** Opens an existing definition for additive editing. */
 	static ProcessDefinitionEditor extend(ProcessDefinition processDefinition) {
 		return new ProcessDefinitionEditorImpl(processDefinition);
 	}

@@ -75,7 +75,7 @@ public class ProcessDefinitionEditorImpl implements ProcessDefinitionEditor {
 	}
 
 	private void registerEdge(Edge edge) {
-		String from = String.valueOf(edge.getFrom().getState());
+		String from = edge.getFrom().getState() != null ? String.valueOf(edge.getFrom().getState()) : null;
 		String to = String.valueOf(edge.getTo().getState());
 		edges.put(Pair.of(from, to), edge);
 	}

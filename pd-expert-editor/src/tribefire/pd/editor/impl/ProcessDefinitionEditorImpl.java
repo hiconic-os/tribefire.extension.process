@@ -64,20 +64,28 @@ public class ProcessDefinitionEditorImpl implements ProcessDefinitionEditor {
 	}
 
 	private void registerStandardNode(StandardNode node) {
-		nodes.put(String.valueOf(node.getState()), node);
+		nodes.put(stateKey(node.getState()), node);
 	}
 
 	private void registerConditionalEdge(ConditionalEdge edge) {
-		String from = String.valueOf(edge.getFrom().getState());
-		String to = String.valueOf(edge.getTo().getState());
+		String from = stateKey(edge.getFrom().getState());
+		String to = stateKey(edge.getTo().getState());
 		String name = edge.getName().value();
 		conditionalEdges.put(new ConditionalEdgeKey(from, to, name), edge);
 	}
 
 	private void registerEdge(Edge edge) {
-		String from = edge.getFrom().getState() != null ? String.valueOf(edge.getFrom().getState()) : null;
-		String to = String.valueOf(edge.getTo().getState());
+		String from = stateKey(edge.getFrom().getState());
+		String to = stateKey(edge.getTo().getState());
 		edges.put(Pair.of(from, to), edge);
+	}
+
+	/**
+	 * The root node's state is null and lookups (e.g. {@link #acquireNode(String)} via rootNode()) use null keys, so
+	 * registration must preserve null rather than mapping it to the string "null" as String.valueOf would.
+	 */
+	private static String stateKey(Object state) {
+		return state != null ? String.valueOf(state) : null;
 	}
 
 	private static class ConditionalEdgeKey {

@@ -39,11 +39,12 @@ import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.log.ProcessLogEvent;
 import tribefire.extension.process.data.model.state.ProcessActivity;
 import tribefire.extension.process.data.model.state.TransitionPhase;
-import tribefire.extension.process.model.configuration.ConditionProcessorReference;
+import tribefire.extension.process.model.configuration.Condition;
 import tribefire.extension.process.model.configuration.Edge;
 import tribefire.extension.process.model.configuration.Node;
 import tribefire.extension.process.model.configuration.TransitionProcessorReference;
 import tribefire.extension.process.reason.model.EdgeNotFound;
+import tribefire.extension.process.reason.model.InvalidConditionExpression;
 import tribefire.extension.process.reason.model.UnexpectedProcessActivity;
 import tribefire.extension.process.reason.model.UnexpectedProcessState;
 import tribefire.extension.process.rx.processing.mgt.BasicConditionProcessorContext;
@@ -403,17 +404,24 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 	}
 
 	private Maybe<Boolean> evaluateCondition(Edge edge) {
-		ConditionProcessorReference condition = edge.getCondition();
+		Condition condition = edge.getCondition();
+		String toState = edge.getTo().getState();
 
 		if (condition == null) {
-			log(ProcessLogEvent.CONDITION_EVALUATED, "default condition evaluated for state [" + edge.getTo().getState() + "]", transitionOracle);
+			log(ProcessLogEvent.CONDITION_EVALUATED, "default condition evaluated for state [" + toState + "]", transitionOracle);
 			return Maybe.complete(true);
 		}
+
+		String expression = condition.getConditionExpression();
+
+		// the expression wins over the processor, which is what makes it usable to disable or force an edge temporarily
+		if (expression != null && !expression.isBlank())
+			return evaluateConditionExpression(expression.trim(), toState);
 
 		String processorInfo = buildProcessorId(condition);
 
 		ConditionProcessor<ProcessItem> processor = (ConditionProcessor<ProcessItem>) processManagerContext.processExpertResolver
-				.resolveConditionProcessor(condition.getProcessorId());
+				.resolveConditionProcessor(condition.getConditionProcessorId());
 
 		BasicConditionProcessorContext<ProcessItem> context = new BasicConditionProcessorContext<>(systemSession(), processItem);
 
@@ -425,12 +433,33 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 				return handleError(context.getError(), ProcessLogEvent.ERROR_IN_CONDITION, "error while checking condition " + processorInfo);
 			}
 
-			log(ProcessLogEvent.CONDITION_EVALUATED, "called condition processor " + processorInfo + " for state [" + edge.getTo().getState()
+			log(ProcessLogEvent.CONDITION_EVALUATED, "called condition processor " + processorInfo + " for state [" + toState
 					+ "] in " + duration.formatWithFloorUnitAndSubUnit(), transitionOracle);
 
 			return Maybe.complete(v.value);
 		} catch (Exception e) {
 			return handleError(e, ProcessLogEvent.ERROR_IN_CONDITION, "error while checking condition " + processorInfo);
+		}
+	}
+
+	private Maybe<Boolean> evaluateConditionExpression(String expression, String toState) {
+		switch (expression) {
+			case Condition.TRUE_EXPRESSION:
+			case Condition.FALSE_EXPRESSION: {
+				boolean value = Condition.TRUE_EXPRESSION.equals(expression);
+				log(ProcessLogEvent.CONDITION_EVALUATED, "condition expression [" + expression + "] for state [" + toState + "]",
+						transitionOracle);
+				return Maybe.complete(value);
+			}
+			default: {
+				InvalidConditionExpression reason = Reasons.build(InvalidConditionExpression.T) //
+						.text("Unsupported condition expression [" + expression + "] on the edge to state [" + toState
+								+ "]. Supported are [" + Condition.TRUE_EXPRESSION + "] and [" + Condition.FALSE_EXPRESSION + "].") //
+						.assign(InvalidConditionExpression::setExpression, expression) //
+						.toReason();
+
+				return handleError(reason, ProcessLogEvent.ERROR_IN_CONDITION);
+			}
 		}
 	}
 
@@ -500,8 +529,8 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 		return processor.getProcessorId();
 	}
 
-	private static String buildProcessorId(ConditionProcessorReference processor) {
-		return processor.getProcessorId();
+	private static String buildProcessorId(Condition condition) {
+		return condition.getConditionProcessorId();
 	}
 
 }

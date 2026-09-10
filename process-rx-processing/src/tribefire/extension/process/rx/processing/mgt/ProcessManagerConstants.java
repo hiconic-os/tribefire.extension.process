@@ -13,8 +13,17 @@
 // ============================================================================
 package tribefire.extension.process.rx.processing.mgt;
 
+import com.braintribe.model.time.TimeSpan;
+import com.braintribe.model.time.TimeUnit;
+
 public interface ProcessManagerConstants {
 
 	String DEFAULT_QUEUE_NAME = "process-manager-queue";
+
+	/** How long the revival worker waits between two searches, unless the configuration says otherwise. */
+	TimeSpan DEFAULT_MONITOR_INTERVAL = TimeSpan.create(1, TimeUnit.minute);
+
+	/** How long a process may stay in activity processing without progress before it counts as unattended. */
+	TimeSpan DEFAULT_UNATTENDED_THRESHOLD = TimeSpan.create(1, TimeUnit.minute);
 
 }

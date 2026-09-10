@@ -31,10 +31,11 @@ public class TransitionOracle {
 		this.edge = null;
 	}
 
-	public TransitionOracle(ProcessOracle processOracle, ProcessDefinition definition, Edge edge) {
+	/** The transition along the given edge, which the given node holds. */
+	public TransitionOracle(ProcessOracle processOracle, ProcessDefinition definition, Node fromNode, Edge edge) {
 		this.processOracle = processOracle;
 		this.definition = definition;
-		this.fromNode = edge.getFrom();
+		this.fromNode = fromNode;
 		this.toNode = edge.getTo();
 		this.edge = edge;
 	}
@@ -44,8 +45,14 @@ public class TransitionOracle {
 	public Node getFrom() { return fromNode; }
 	public Node getTo() { return toNode; }
 	public Edge getEdge() { return edge; }
+
+	/** TODO: unused, {@code ProcessOracle.drainNodes} is read directly. Either use it, or remove it. */
 	public boolean isTerminal() { return processOracle.isTerminal(toNode); }
 
+	/**
+	 * TODO: unused, and so are the {@code errorNode} properties it reads. The engine only halts a failed process. Either
+	 * implement the error routing, or remove this method and both properties.
+	 */
 	public Node getErrorNode() {
 		return toNode.getErrorNode() != null ? toNode.getErrorNode() : definition.getErrorNode();
 	}

@@ -29,7 +29,6 @@ import com.braintribe.model.query.SelectQuery;
 import com.braintribe.model.query.conditions.Condition;
 import com.braintribe.model.service.api.result.Neutral;
 import com.braintribe.model.time.TimeSpan;
-import com.braintribe.model.time.TimeUnit;
 
 import tribefire.extension.process.api.model.ctrl.ReviveProcesses;
 import tribefire.extension.process.data.model.ProcessItem;
@@ -65,7 +64,8 @@ public class ReviveProcessesProcessor extends ProcessManagerRequestProcessor<Rev
 	}
 
 	private void reviveUnattended(EntityType<? extends ProcessItem> processType) {
-		List<String> unattendedProcessItemIds = session().queryDetached().select(RevivalQueries.unattendedProcessIds(processType)).list();
+		List<String> unattendedProcessItemIds = session().queryDetached()
+				.select(RevivalQueries.unattendedProcessIds(processType, processManagerContext.unattendedThreshold)).list();
 		
 		logger.debug("Found " + unattendedProcessItemIds.size() + " unattended process(es) of type " + processType.getTypeSignature());
 
@@ -80,7 +80,7 @@ public class ReviveProcessesProcessor extends ProcessManagerRequestProcessor<Rev
 		
 		List<EntityType<? extends ProcessItem>> mappedProcessTypes = new ArrayList<>();
 		for (EntityType<? extends ProcessItem> processType: processTypes) {
-			if (processManagerContext.processDefinitionResolver.resolve(processType, modelAccessory.getCmdResolver()) == null)
+			if (processManagerContext.processDefinitionResolver.resolve(processType, modelAccessory.getCmdResolver()).isUnsatisfied())
 				continue;
 			
 			mappedProcessTypes.add(processType);
@@ -90,8 +90,8 @@ public class ReviveProcessesProcessor extends ProcessManagerRequestProcessor<Rev
 	}
 	
 	private static class RevivalQueries extends SelectQueries {
-		static SelectQuery unattendedProcessIds(EntityType<? extends ProcessItem> processType) {
-			Date stateThreshold = new Date(System.currentTimeMillis() - TimeSpan.create(1, TimeUnit.minute).toLongMillies());
+		static SelectQuery unattendedProcessIds(EntityType<? extends ProcessItem> processType, TimeSpan unattendedThreshold) {
+			Date stateThreshold = new Date(System.currentTimeMillis() - unattendedThreshold.toLongMillies());
 			From p = source(processType);
 			
 			Condition condition = and( //

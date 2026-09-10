@@ -34,6 +34,7 @@ import com.braintribe.model.processing.worker.api.WorkerContext;
 import com.braintribe.model.processing.worker.api.WorkerException;
 import com.braintribe.model.service.api.ServiceRequest;
 import com.braintribe.model.service.api.result.Neutral;
+import com.braintribe.model.time.TimeSpan;
 import com.braintribe.transport.messaging.api.MessagingException;
 import com.braintribe.transport.messaging.api.MessagingSession;
 import com.braintribe.transport.messaging.api.MessagingSessionProvider;
@@ -86,6 +87,21 @@ public class ProcessManager extends AbstractDispatchingAccessRequestProcessor<Pr
 	@Configurable
 	public void setMessageQueueName(String messageQueueName) {
 		processManagerContext.messageQueueName = messageQueueName;
+	}
+
+	/** How long the revival worker waits between two searches. Default: {@link ProcessManagerConstants#DEFAULT_MONITOR_INTERVAL}. */
+	@Configurable
+	public void setMonitorInterval(TimeSpan monitorInterval) {
+		processManagerContext.monitorInterval = monitorInterval;
+	}
+
+	/**
+	 * How long a process may stay in activity processing without progress before the revival worker treats it as unattended.
+	 * Default: {@link ProcessManagerConstants#DEFAULT_UNATTENDED_THRESHOLD}.
+	 */
+	@Configurable
+	public void setUnattendedThreshold(TimeSpan unattendedThreshold) {
+		processManagerContext.unattendedThreshold = unattendedThreshold;
 	}
 	
 	@Required

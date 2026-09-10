@@ -66,7 +66,9 @@ public class ProcessManagerContext extends ProcessTerminationListening {
 	
 	public ExecutorService executor;
 	
-	public TimeSpan monitorInterval = TimeSpan.create(1, TimeUnit.minute);
+	public TimeSpan monitorInterval = ProcessManagerConstants.DEFAULT_MONITOR_INTERVAL;
+
+	public TimeSpan unattendedThreshold = ProcessManagerConstants.DEFAULT_UNATTENDED_THRESHOLD;
 	
 	public TaskScheduler taskScheduler;
 

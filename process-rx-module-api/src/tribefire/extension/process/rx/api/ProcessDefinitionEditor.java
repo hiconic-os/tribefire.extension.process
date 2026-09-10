@@ -4,29 +4,43 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import tribefire.extension.process.model.configuration.ConditionProcessorReference;
+import tribefire.extension.process.model.configuration.Condition;
 import tribefire.extension.process.model.configuration.DecoupledInteraction;
 import tribefire.extension.process.model.configuration.Edge;
 import tribefire.extension.process.model.configuration.Node;
 import tribefire.extension.process.model.configuration.ProcessDefinition;
 import tribefire.extension.process.model.configuration.TransitionProcessorReference;
 
-/** Session-free editor for RX process definitions. Nodes are identified by state and edges by name. */
+/**
+ * Session-free editor for RX process definitions. Nodes are identified by state, edges by name, and an edge is created on
+ * the node it leaves.
+ * <p>
+ * An edge is appended to {@link Node#getEdges()}, which is the evaluation order. Use the {@code prepend} variants when an
+ * edge must be evaluated before the conditions that a node already has.
+ */
 public final class ProcessDefinitionEditor {
 
 	private final ProcessDefinition definition;
 	private final Map<String, Node> nodesByState = new HashMap<>();
 	private final Map<String, Edge> edgesByName = new HashMap<>();
+	/** The node that holds an edge, by edge name. Kept here rather than read from {@link Edge#getFrom()}, which is redundant. */
+	private final Map<String, Node> edgeOwnersByName = new HashMap<>();
 
 	private ProcessDefinitionEditor(ProcessDefinition definition) {
 		this.definition = Objects.requireNonNull(definition, "definition");
 		definition.getNodes().forEach(this::indexNode);
-		definition.getEdges().forEach(this::indexEdge);
+		definition.getNodes().forEach(node -> node.getEdges().forEach(edge -> indexEdge(node, edge)));
 	}
 
-	public static ProcessDefinitionEditor create(String name) {
+	/** A new definition with the given id, using the id as its name. */
+	public static ProcessDefinitionEditor create(String processDefinitionId) {
+		return create(processDefinitionId, processDefinitionId);
+	}
+
+	public static ProcessDefinitionEditor create(String processDefinitionId, String name) {
 		ProcessDefinition definition = ProcessDefinition.T.create();
-		definition.setName(name);
+		definition.setProcessDefinitionId(requireText(processDefinitionId, "process definition id"));
+		definition.setName(requireText(name, "process definition name"));
 		return new ProcessDefinitionEditor(definition);
 	}
 
@@ -68,29 +82,42 @@ public final class ProcessDefinitionEditor {
 		return node;
 	}
 
+	/** An edge from one state to another, appended to the edges of the source node. */
 	public Edge edge(String fromState, String toState, String name) {
-		Edge existing = edgesByName.get(name);
-		if (existing != null) {
-			assertEndpoints(existing, fromState, toState);
-			return existing;
-		}
+		return acquireEdge(fromState, toState, name, false);
+	}
 
-		Edge edge = Edge.T.create();
-		edge.setName(requireText(name, "edge name"));
-		edge.setFrom(acquireNode(fromState));
-		edge.setTo(acquireNode(toState));
-		definition.getEdges().add(edge);
-		edgesByName.put(name, edge);
-		return edge;
+	/** Like {@link #edge(String, String, String)}, but evaluated before the edges that the source node already has. */
+	public Edge prependEdge(String fromState, String toState, String name) {
+		return acquireEdge(fromState, toState, name, true);
 	}
 
 	public Edge rootEdge(String toState, String name) {
 		return edge(null, toState, name);
 	}
 
+	/** An edge that is taken when the condition processor with the given id matches. */
 	public Edge conditionedEdge(String fromState, String toState, String name, String conditionProcessorId) {
+		return conditionedEdge(fromState, toState, name, Condition.processor(conditionProcessorId));
+	}
+
+	public Edge conditionedEdge(String fromState, String toState, String name, Condition condition) {
 		Edge edge = edge(fromState, toState, name);
-		edge.setCondition(conditionProcessor(conditionProcessorId));
+		edge.setCondition(condition);
+		return edge;
+	}
+
+	/**
+	 * Like {@link #conditionedEdge(String, String, String, String)}, but evaluated before the conditions that the source
+	 * node already has. This is how an extension gives its own condition priority over an existing graph.
+	 */
+	public Edge prependConditionedEdge(String fromState, String toState, String name, String conditionProcessorId) {
+		return prependConditionedEdge(fromState, toState, name, Condition.processor(conditionProcessorId));
+	}
+
+	public Edge prependConditionedEdge(String fromState, String toState, String name, Condition condition) {
+		Edge edge = prependEdge(fromState, toState, name);
+		edge.setCondition(condition);
 		return edge;
 	}
 
@@ -105,7 +132,7 @@ public final class ProcessDefinitionEditor {
 		Edge edge = edgesByName.remove(name);
 		if (edge == null)
 			throw new IllegalArgumentException("Unknown process edge: " + name);
-		definition.getEdges().remove(edge);
+		edgeOwnersByName.remove(name).getEdges().remove(edge);
 	}
 
 	public ProcessDefinitionEditor errorNode(String state, String errorState) {
@@ -150,10 +177,28 @@ public final class ProcessDefinitionEditor {
 		return reference;
 	}
 
-	public static ConditionProcessorReference conditionProcessor(String processorId) {
-		ConditionProcessorReference reference = ConditionProcessorReference.T.create();
-		reference.setProcessorId(requireText(processorId, "condition processor id"));
-		return reference;
+	private Edge acquireEdge(String fromState, String toState, String name, boolean prepend) {
+		Edge existing = edgesByName.get(name);
+		if (existing != null) {
+			assertEndpoints(existing, fromState, toState);
+			return existing;
+		}
+
+		Node fromNode = acquireNode(fromState);
+
+		Edge edge = Edge.T.create();
+		edge.setName(requireText(name, "edge name"));
+		edge.setFrom(fromNode);
+		edge.setTo(acquireNode(toState));
+
+		if (prepend)
+			fromNode.getEdges().add(0, edge);
+		else
+			fromNode.getEdges().add(edge);
+
+		edgesByName.put(name, edge);
+		edgeOwnersByName.put(name, fromNode);
+		return edge;
 	}
 
 	private void indexNode(Node node) {
@@ -162,15 +207,17 @@ public final class ProcessDefinitionEditor {
 			throw new IllegalArgumentException("Duplicate process node state: " + node.getState());
 	}
 
-	private void indexEdge(Edge edge) {
+	private void indexEdge(Node owner, Edge edge) {
 		String name = requireText(edge.getName(), "edge name");
 		Edge previous = edgesByName.putIfAbsent(name, edge);
 		if (previous != null)
 			throw new IllegalArgumentException("Duplicate process edge name: " + name);
+		edgeOwnersByName.put(name, owner);
 	}
 
-	private static void assertEndpoints(Edge edge, String fromState, String toState) {
-		if (!Objects.equals(edge.getFrom().getState(), fromState) || !Objects.equals(edge.getTo().getState(), toState))
+	private void assertEndpoints(Edge edge, String fromState, String toState) {
+		Node owner = edgeOwnersByName.get(edge.getName());
+		if (!Objects.equals(owner.getState(), fromState) || !Objects.equals(edge.getTo().getState(), toState))
 			throw new IllegalArgumentException("Edge '" + edge.getName() + "' already exists with different endpoints");
 	}
 

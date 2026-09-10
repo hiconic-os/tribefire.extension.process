@@ -1,5 +1,6 @@
 package tribefire.extension.process.rx.wire.space;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.braintribe.model.meta.data.constraint.Modifiable;
@@ -25,9 +26,11 @@ import tribefire.extension.process.api.TransitionProcessor;
 import tribefire.extension.process.api.model.ProcessManagerRequest;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.model.configuration.ProcessDefinitionsConfiguration;
+import tribefire.extension.process.model.configuration.ProcessManagerConfiguration;
 import tribefire.extension.process.rx.api.ProcessRxContract;
 import tribefire.extension.process.rx.impl.ProcessExpertRegistry;
 import tribefire.extension.process.rx.impl.CmdProcessDefinitionResolver;
+import tribefire.extension.process.rx.impl.ProcessDefinitionsValidator;
 import tribefire.extension.process.rx.processing.mgt.ProcessManager;
 
 @Managed
@@ -58,6 +61,9 @@ public class ProcessRxModuleSpace implements RxModuleContract, ProcessRxContract
 
 	@Override
 	public void onDeploy() {
+		// at this point every module contributed its definitions, so the whole graph can be checked
+		ProcessDefinitionsValidator.validate(definitions());
+
 		try {
 			worker.manager().deploy(processManager());
 		} catch (WorkerException e) {
@@ -95,9 +101,22 @@ public class ProcessRxModuleSpace implements RxModuleContract, ProcessRxContract
 		bean.setSystemSessionFactory(access.systemSessionFactory());
 		bean.setTaskScheduler(platform.execution().taskScheduler());
 		bean.setMonitoredAccessIdsSupplier(() -> definitions().getMonitoredAccessIds().stream().toList());
+		applyIfSet(managerConfiguration().getMonitorInterval(), bean::setMonitorInterval);
+		applyIfSet(managerConfiguration().getUnattendedThreshold(), bean::setUnattendedThreshold);
 		bean.setProcessDefinitionResolver(processDefinitionResolver());
 		bean.setProcessExpertResolver(processExpertRegistry());
 		return bean;
+	}
+
+	@Managed
+	private ProcessManagerConfiguration managerConfiguration() {
+		return platform.configuration().readConfig(ProcessManagerConfiguration.T).get();
+	}
+
+	/** Keeps the default of the process manager when the configuration says nothing about a timing. */
+	private static <V> void applyIfSet(V value, Consumer<V> setter) {
+		if (value != null)
+			setter.accept(value);
 	}
 
 	@Managed

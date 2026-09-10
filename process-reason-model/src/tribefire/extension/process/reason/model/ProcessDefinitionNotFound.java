@@ -16,6 +16,17 @@ package tribefire.extension.process.reason.model;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
+/**
+ * No {@code ProcessDefinition} could be resolved for a process. Either the process type carries no {@code ManageProcessWith}
+ * metadata, or that metadata names a {@link #getProcessDefinitionId() processDefinitionId} that the configuration does not
+ * hold.
+ */
 public interface ProcessDefinitionNotFound extends ProcessReason {
 	EntityType<ProcessDefinitionNotFound> T = EntityTypes.T(ProcessDefinitionNotFound.class);
+
+	String processDefinitionId = "processDefinitionId";
+
+	/** The id that was looked up, or {@code null} if the process type names none at all. */
+	String getProcessDefinitionId();
+	void setProcessDefinitionId(String processDefinitionId);
 }

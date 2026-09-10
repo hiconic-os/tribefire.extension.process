@@ -30,29 +30,29 @@ public final class Bpmn2ProcessDefinition {
 	private final ProcessDefinitionEditor editor;
 	private final Set<String> edgeNames = new HashSet<>();
 
-	private Bpmn2ProcessDefinition(BpmnModelInstance model) {
+	private Bpmn2ProcessDefinition(String processDefinitionId, BpmnModelInstance model) {
 		this.model = model;
-		this.editor = ProcessDefinitionEditor.create(processName(model));
+		this.editor = ProcessDefinitionEditor.create(processDefinitionId, processName(model));
 	}
 
-	public static ProcessDefinition translate(Resource resource) {
-		return translate(resource::openStream);
+	public static ProcessDefinition translate(String processDefinitionId, Resource resource) {
+		return translate(processDefinitionId, resource::openStream);
 	}
 
-	public static ProcessDefinition translate(InputStreamProvider inputProvider) {
+	public static ProcessDefinition translate(String processDefinitionId, InputStreamProvider inputProvider) {
 		try (InputStream input = inputProvider.openInputStream()) {
-			return translate(input);
+			return translate(processDefinitionId, input);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Error while translating BPMN model", e);
 		}
 	}
 
-	public static ProcessDefinition translate(InputStream input) {
-		return translate(Bpmn.readModelFromStream(input));
+	public static ProcessDefinition translate(String processDefinitionId, InputStream input) {
+		return translate(processDefinitionId, Bpmn.readModelFromStream(input));
 	}
 
-	public static ProcessDefinition translate(BpmnModelInstance model) {
-		return new Bpmn2ProcessDefinition(model).translate();
+	public static ProcessDefinition translate(String processDefinitionId, BpmnModelInstance model) {
+		return new Bpmn2ProcessDefinition(processDefinitionId, model).translate();
 	}
 
 	private ProcessDefinition translate() {

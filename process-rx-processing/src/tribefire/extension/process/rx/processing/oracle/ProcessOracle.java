@@ -1,6 +1,7 @@
 package tribefire.extension.process.rx.processing.oracle;
 
-import java.util.ArrayList;
+import static com.braintribe.utils.lcd.CollectionTools2.acquireList;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +36,7 @@ public class ProcessOracle {
 			String fromState = edge.getFrom().getState();
 			String toState = edge.getTo().getState();
 			edgesByStateChange.put(Pair.of(fromState, toState), edge);
-			outgoingEdgesByState.computeIfAbsent(fromState, key -> new ArrayList<>()).add(edge);
+			acquireList(outgoingEdgesByState, fromState).add(edge);
 		}
 		for (Node node : definition.getNodes())
 			if (!outgoingEdgesByState.containsKey(node.getState()))

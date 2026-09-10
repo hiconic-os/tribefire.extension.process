@@ -22,7 +22,6 @@ import com.braintribe.model.generic.eval.Evaluator;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.messaging.Message;
 import com.braintribe.model.messaging.Queue;
-import com.braintribe.model.processing.lock.api.LockManager;
 import com.braintribe.model.processing.lock.api.Locking;
 import com.braintribe.model.processing.session.api.persistence.PersistenceGmSessionFactory;
 import com.braintribe.model.service.api.ServiceRequest;

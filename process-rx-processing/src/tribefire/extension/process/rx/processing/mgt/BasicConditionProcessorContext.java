@@ -21,16 +21,16 @@ import tribefire.extension.process.data.model.ProcessItem;
 
 public class BasicConditionProcessorContext<T extends ProcessItem> implements ConditionProcessorContext<T> {
 
-	private T process;
+	private final T process;
 	private Reason error;
-	private PersistenceGmSession session;
-	
+	private final PersistenceGmSession session;
+
 	public BasicConditionProcessorContext(PersistenceGmSession session, T process) {
 		super();
 		this.session = session;
 		this.process = process;
 	}
-	
+
 	@Override
 	public void setError(Reason reason) {
 		this.error = reason;
@@ -40,24 +40,20 @@ public class BasicConditionProcessorContext<T extends ProcessItem> implements Co
 		return error;
 	}
 
-
 	@Override
 	public T getProcess() {
 		return process;
 	}
-
 
 	@Override
 	public PersistenceGmSession getSession() {
 		return session;
 	}
 
-
 	@Override
 	public ConditionProcessorContext<T> system() {
 		return this;
 	}
-
 
 	@Override
 	public ConditionProcessorContext<T> request() {

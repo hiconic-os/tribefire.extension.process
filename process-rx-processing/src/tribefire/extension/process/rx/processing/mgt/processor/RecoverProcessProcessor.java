@@ -28,8 +28,8 @@ import tribefire.extension.process.data.model.state.ProcessActivity;
 import tribefire.extension.process.data.model.state.ProcessControl;
 import tribefire.extension.process.data.model.state.TransitionPhase;
 import tribefire.extension.process.model.configuration.TransitionProcessorReference;
-import tribefire.extension.process.rx.processing.oracle.TransitionOracle;
 import tribefire.extension.process.reason.model.UnexpectedProcessActivity;
+import tribefire.extension.process.rx.processing.oracle.TransitionOracle;
 
 public class RecoverProcessProcessor extends OracledProcessRequestProcessor<RecoverProcess, Neutral> {
 	

@@ -16,16 +16,14 @@ package tribefire.extension.process.rx.processing.mgt;
 import java.util.function.Supplier;
 
 import com.braintribe.model.generic.reflection.EntityType;
-import com.braintribe.model.processing.accessrequest.api.AccessRequestContext;
 import com.braintribe.model.processing.accessrequest.api.DispatchConfiguration;
 
 import tribefire.extension.process.api.model.ProcessManagerRequest;
-import tribefire.extension.process.api.model.ProcessRequest;
 import tribefire.extension.process.rx.processing.mgt.processor.ProcessManagerRequestProcessor;
 
 public class ProcessManagerContextualizedDispatchConfigurer {
-	private DispatchConfiguration dispatching;
-	private Supplier<ProcessManagerContext> contextSupplier;
+	private final DispatchConfiguration dispatching;
+	private final Supplier<ProcessManagerContext> contextSupplier;
 
 	public ProcessManagerContextualizedDispatchConfigurer(DispatchConfiguration dispatching, Supplier<ProcessManagerContext> contextSupplier) {
 		super();
@@ -34,10 +32,10 @@ public class ProcessManagerContextualizedDispatchConfigurer {
 	}
 	
 	public <S extends ProcessManagerRequest> void register(EntityType<S> type, Supplier<ProcessManagerRequestProcessor<S, ?>> processorSupplier) {
-		dispatching.registerStatefulWithContext(type, c -> newInstance(c, processorSupplier));
+		dispatching.registerStatefulWithContext(type, c -> newInstance(processorSupplier));
 	}
 	
-	private <S extends ProcessManagerRequest> ProcessManagerRequestProcessor<S, ?> newInstance(AccessRequestContext<S> requestContext, Supplier<ProcessManagerRequestProcessor<S, ?>> processorSupplier) {
+	private <S extends ProcessManagerRequest> ProcessManagerRequestProcessor<S, ?> newInstance(Supplier<ProcessManagerRequestProcessor<S, ?>> processorSupplier) {
 		ProcessManagerRequestProcessor<S, ?> processor = processorSupplier.get();
 		processor.initProcessManagerContext(contextSupplier.get());
 		return processor;

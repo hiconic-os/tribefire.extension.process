@@ -19,11 +19,11 @@ import com.braintribe.model.generic.reflection.EntityType;
 public interface Reference<E extends GenericEntity> extends Comparable<Reference<?>> {
 	<I> I id();
 	EntityType<E> type();
-	
+
 	static <T extends GenericEntity> Reference<T> of(T entity) {
 		return new ReferenceImpl<>(entity.entityType(), entity.getId());
 	}
-	
+
 	static <T extends GenericEntity> Reference<T> of(EntityType<T> type, Object id) {
 		return new ReferenceImpl<>(type, id);
 	}

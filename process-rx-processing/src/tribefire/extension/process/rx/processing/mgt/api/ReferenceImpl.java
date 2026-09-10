@@ -19,20 +19,19 @@ import com.braintribe.model.generic.GenericEntity;
 import com.braintribe.model.generic.reflection.EntityType;
 
 class ReferenceImpl<E extends GenericEntity> implements Reference<E> {
-	private Object id;
-	private EntityType<E> type;
-	
+	private final Object id;
+	private final EntityType<E> type;
+
 	public ReferenceImpl(EntityType<E> type, Object id) {
-		super();
 		this.id = Objects.requireNonNull(id, () -> "Argument id must not be null");
 		this.type = type;
 	}
-	
+
 	@Override
 	public <I> I id() {
-		return (I)id;
+		return (I) id;
 	}
-	
+
 	@Override
 	public EntityType<E> type() {
 		return type;
@@ -54,23 +53,23 @@ class ReferenceImpl<E extends GenericEntity> implements Reference<E> {
 		Reference<?> other = (Reference<?>) obj;
 		return Objects.equals(id, other.id()) && Objects.equals(type, other.type());
 	}
-	
+
 	@Override
 	public int compareTo(Reference<?> o) {
 		EntityType<?> et1 = type();
 		EntityType<?> et2 = o.type();
-		
+
 		int res = et1.compareTo(et2);
-		
+
 		if (res != 0)
 			return res;
-		
+
 		Comparable<Object> c1 = id();
 		Comparable<Object> c2 = o.id();
-		
+
 		return c1.compareTo(c2);
 	}
-	
+
 	@Override
 	public String toString() {
 		return type.getTypeSignature() + "[id=" + id + "]";

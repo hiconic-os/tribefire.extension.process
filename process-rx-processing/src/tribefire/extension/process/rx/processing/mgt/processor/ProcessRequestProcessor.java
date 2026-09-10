@@ -27,13 +27,12 @@ import com.braintribe.model.processing.meta.oracle.EntityTypeOracle;
 import com.braintribe.model.processing.meta.oracle.ModelOracle;
 import com.braintribe.model.processing.query.building.EntityQueries;
 import com.braintribe.model.query.EntityQuery;
-import com.braintribe.model.query.conditions.ValueComparison;
 
 import tribefire.extension.process.api.model.ProcessRequest;
 import tribefire.extension.process.data.model.ProcessItem;
+import tribefire.extension.process.reason.model.ProcessNotFound;
 import tribefire.extension.process.rx.processing.mgt.api.Reference;
 import tribefire.extension.process.rx.processing.mgt.common.ProcessLockingTrait;
-import tribefire.extension.process.reason.model.ProcessNotFound;
 
 public abstract class ProcessRequestProcessor<R extends ProcessRequest, E> extends ProcessManagerRequestProcessor<R, E> implements ProcessLockingTrait {
 	

@@ -14,5 +14,7 @@
 package tribefire.extension.process.rx.processing.mgt;
 
 public interface ProcessManagerConstants {
-	public static final String DEFAULT_QUEUE_NAME = "process-manager-queue";
+
+	String DEFAULT_QUEUE_NAME = "process-manager-queue";
+
 }

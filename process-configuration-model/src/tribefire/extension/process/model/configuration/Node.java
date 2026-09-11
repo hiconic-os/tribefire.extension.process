@@ -95,8 +95,8 @@ public interface Node extends GenericEntity {
 	 * Where the process continues when it waited in this node longer than its {@link #getGracePeriod() grace period}.
 	 * Without an overdue node the process continues by normal routing.
 	 * <p>
-	 * This node must have an edge to it, as this is a state change like any other. The engine does not create one, and the
-	 * handling of the overdue process fails if the edge is missing.
+	 * This node must have an edge to it, as this is a state change like any other. The engine does not create one, and a
+	 * process that becomes overdue without it halts.
 	 */
 	Node getOverdueNode();
 	void setOverdueNode(Node overdueNode);

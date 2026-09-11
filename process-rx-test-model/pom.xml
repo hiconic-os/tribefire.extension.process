@@ -1,0 +1,26 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>tribefire.extension.process</groupId>
+		<artifactId>parent</artifactId>
+		<version>[1.0,1.1)</version>
+	</parent>
+	<artifactId>process-rx-test-model</artifactId>
+	<version>1.0.1</version>
+	<properties>
+		<archetype>model</archetype>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>tribefire.extension.process</groupId>
+			<artifactId>process-data-model</artifactId>
+			<version>${V.tribefire.extension.process}</version>
+		</dependency>
+		<dependency>
+			<groupId>tribefire.extension.process</groupId>
+			<artifactId>process-metadata-annotations</artifactId>
+			<version>${V.tribefire.extension.process}</version>
+			<?group functional?>
+		</dependency>
+	</dependencies>
+</project>

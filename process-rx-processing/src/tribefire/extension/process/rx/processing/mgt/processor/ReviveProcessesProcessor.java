@@ -76,8 +76,12 @@ public class ReviveProcessesProcessor extends ProcessManagerRequestProcessor<Rev
 
 	private List<EntityType<? extends ProcessItem>> getMappedProcessesTypes() {
 		ModelAccessory modelAccessory = session().getModelAccessory();
-		Set<EntityType<? extends ProcessItem>> processTypes = modelAccessory.getOracle().findEntityTypeOracle(ProcessItem.T).getSubTypes().onlyInstantiable().asTypes();
-		
+		Set<EntityType<? extends ProcessItem>> processTypes = modelAccessory.getOracle().findEntityTypeOracle(ProcessItem.T) //
+				.getSubTypes() //
+				.transitive() //
+				.onlyInstantiable() //
+				.asTypes();
+
 		List<EntityType<? extends ProcessItem>> mappedProcessTypes = new ArrayList<>();
 		for (EntityType<? extends ProcessItem> processType: processTypes) {
 			if (processManagerContext.processDefinitionResolver.resolve(processType, modelAccessory.getCmdResolver()).isUnsatisfied())

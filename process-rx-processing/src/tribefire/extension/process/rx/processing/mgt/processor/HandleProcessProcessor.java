@@ -45,6 +45,7 @@ import tribefire.extension.process.model.configuration.Node;
 import tribefire.extension.process.model.configuration.TransitionProcessorReference;
 import tribefire.extension.process.reason.model.EdgeNotFound;
 import tribefire.extension.process.reason.model.InvalidConditionExpression;
+import tribefire.extension.process.reason.model.NodeNotFound;
 import tribefire.extension.process.reason.model.UnexpectedProcessActivity;
 import tribefire.extension.process.reason.model.UnexpectedProcessState;
 import tribefire.extension.process.rx.processing.mgt.BasicConditionProcessorContext;
@@ -73,11 +74,39 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 
 	@Override
 	protected Maybe<Neutral> processWithLockedItem() {
-		if (processItem.getActivity() == ProcessActivity.processing) {
+		// the transition that led into the current state, which both branches below work with
+		Maybe<TransitionOracle> transitionMaybe = resolveTransition();
+
+		if (transitionMaybe.isUnsatisfied())
+			return transitionMaybe.whyUnsatisfied().asMaybe();
+
+		transitionOracle = transitionMaybe.get();
+
+		if (processItem.getActivity() == ProcessActivity.processing)
 			return handleProcess();
-		} else {
-			return handleWaitingProcess();
-		}
+
+		return handleWaitingProcess();
+	}
+
+	private Maybe<TransitionOracle> resolveTransition() {
+		String previousState = processItem.getPreviousState();
+		String state = processItem.getState();
+
+		// a state can disappear from a definition while a process sits in it
+		if (!processOracle.hasState(state))
+			return unknownState(state);
+
+		if (!processOracle.hasState(previousState))
+			return unknownState(previousState);
+
+		return Maybe.complete(processOracle.transitionOracle(previousState, state, true));
+	}
+
+	private Maybe<TransitionOracle> unknownState(String state) {
+		return Reasons.build(UnexpectedProcessState.T) //
+				.text("Unable to proceed with transitioning as it contradicts the process definition") //
+				.cause(Reasons.build(NodeNotFound.T).text("State [" + state + "] is no node of the definition of " + processItem).toReason()) //
+				.toMaybe();
 	}
 
 	private Maybe<Neutral> handleWaitingProcess() {
@@ -101,6 +130,12 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 				String fromState = processItem.getState();
 				String toState = overdueNode.getState();
 
+				if (!processOracle.hasEdge(fromState, toState)) {
+					Reason reason = Reasons.build(EdgeNotFound.T) //
+							.text("Edge from [" + fromState + "] to overdue node [" + toState + "] not found").toReason();
+					return handleError(reason, ProcessLogEvent.INVALID_TRANSITION);
+				}
+
 				// state change
 				processOracle.transitionOracle(fromState, toState).initTransition(processItem);
 
@@ -111,26 +146,16 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 				enqueueProcessContinuation();
 
 				return Maybe.complete(Neutral.NEUTRAL);
-			} else {
-				// no overdue edge, thus continue normally (auto resume after overdue)
-				doTransitionOrEnd();
 			}
 
+			// no overdue node, thus continue normally (auto resume after overdue)
+			return doTransitionOrEnd();
 		}
 
 		return Maybe.complete(Neutral.NEUTRAL);
 	}
 
 	private Maybe<Neutral> handleProcess() {
-		transitionOracle = processOracle.transitionOracle(processItem.getPreviousState(), processItem.getState(), true);
-
-		if (transitionOracle == null) {
-			return Reasons.build(UnexpectedProcessState.T).text("Unable to proceed with transitioning as it contradicts the process defintion") //
-					.cause(Reasons.build(EdgeNotFound.T).text("Edge from state " + processItem.getPreviousState() + " to state "
-							+ processItem.getState() + " not found in process " + processItem).toReason())
-					.toMaybe();
-		}
-
 		TransitionPhase transitionPhase = processItem.getTransitionPhase();
 
 		if (transitionPhase == null) {

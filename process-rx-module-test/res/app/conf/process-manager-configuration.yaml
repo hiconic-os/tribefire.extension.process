@@ -1,0 +1,7 @@
+# Short timings, so that a test does not wait a minute for the revival worker.
+monitorInterval: !com.braintribe.model.time.TimeSpan
+  value: 1.0
+  unit: second
+unattendedThreshold: !com.braintribe.model.time.TimeSpan
+  value: 1.0
+  unit: second

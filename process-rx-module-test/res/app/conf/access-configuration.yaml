@@ -1,0 +1,4 @@
+accesses:
+  - !hiconic.rx.access.smood.model.configuration.SmoodAccess
+    accessId: test.processes
+    displayName: In-Memory Process Test Access

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.braintribe.model.time.TimeSpan;
+
 import tribefire.extension.process.model.configuration.Condition;
 import tribefire.extension.process.model.configuration.DecoupledInteraction;
 import tribefire.extension.process.model.configuration.Edge;
@@ -142,6 +144,12 @@ public final class ProcessDefinitionEditor {
 
 	public ProcessDefinitionEditor overdueNode(String state, String overdueState) {
 		acquireNode(state).setOverdueNode(acquireNode(overdueState));
+		return this;
+	}
+
+	/** How long the given state may wait for its decoupled interaction before the process is overdue. */
+	public ProcessDefinitionEditor gracePeriod(String state, TimeSpan gracePeriod) {
+		acquireNode(state).setGracePeriod(gracePeriod);
 		return this;
 	}
 

@@ -18,7 +18,6 @@ import hiconic.rx.module.api.service.ModelConfiguration;
 import hiconic.rx.module.api.service.ModelConfigurations;
 import hiconic.rx.module.api.wire.RxModuleContract;
 import hiconic.rx.module.api.wire.RxPlatformContract;
-import hiconic.rx.worker.api.WorkerContract;
 import tribefire.extension.process._ProcessApiModel_;
 import tribefire.extension.process._ProcessDataModel_;
 import tribefire.extension.process.api.ConditionProcessor;
@@ -40,7 +39,6 @@ public class ProcessRxModuleSpace implements RxModuleContract, ProcessRxContract
 	@Import private AccessContract access;
 	@Import private LockingContract locking;
 	@Import private MessagingContract messaging;
-	@Import private WorkerContract worker;
 
 	@Override
 	public void configureModels(ModelConfigurations configurations) {
@@ -65,7 +63,7 @@ public class ProcessRxModuleSpace implements RxModuleContract, ProcessRxContract
 		ProcessDefinitionsValidator.validate(definitions());
 
 		try {
-			worker.manager().deploy(processManager());
+			platform.execution().workerManager().deploy(processManager());
 		} catch (WorkerException e) {
 			throw new IllegalStateException("Could not deploy the process revival worker", e);
 		}

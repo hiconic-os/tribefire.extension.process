@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	The fixture of the translator tests. It is not a real process; it is drawn to carry every shape that a translator
+	has to answer for:
+
+	- a start box without a label, which becomes the root
+	- a gateway whose arrows are labelled, and one whose arrows are not
+	- a gateway with two labelled arrows in reverse alphabetical order, which pins the sorting
+	- three gateways chained behind one box, which pins the order of a fan out
+	- one box of each kind: person (userTask), system (serviceTask), automatic (scriptTask) and plain (task)
+	- a plain arrow from one box to another, and two arrows that lead back
+-->
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Definitions_lab" targetNamespace="http://bpmn.io/schema/bpmn" name="Translator Lab">
+  <bpmn:process id="Process_lab" isExecutable="false">
+
+    <bpmn:task id="Task_Start">
+      <bpmn:outgoing>Flow_start_entry</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_start_entry" sourceRef="Task_Start" targetRef="Gateway_Entry" />
+
+    <bpmn:exclusiveGateway id="Gateway_Entry">
+      <bpmn:incoming>Flow_start_entry</bpmn:incoming>
+      <bpmn:outgoing>Flow_entry_auth</bpmn:outgoing>
+      <bpmn:outgoing>Flow_entry_review</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_entry_auth" name="Is authority?" sourceRef="Gateway_Entry" targetRef="Task_Auth" />
+    <bpmn:sequenceFlow id="Flow_entry_review" sourceRef="Gateway_Entry" targetRef="Task_Review" />
+
+    <bpmn:userTask id="Task_Review" name="REVIEW">
+      <bpmn:incoming>Flow_entry_review</bpmn:incoming>
+      <bpmn:outgoing>Flow_review_gateway</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_review_gateway" sourceRef="Task_Review" targetRef="Gateway_Review" />
+
+    <bpmn:exclusiveGateway id="Gateway_Review">
+      <bpmn:incoming>Flow_review_gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_review_declined</bpmn:outgoing>
+      <bpmn:outgoing>Flow_review_approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_review_undecided</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_review_declined" name="Is declined?" sourceRef="Gateway_Review" targetRef="Task_SinkCancelled" />
+    <bpmn:sequenceFlow id="Flow_review_approved" name="Is approved?" sourceRef="Gateway_Review" targetRef="Task_Auth" />
+    <bpmn:sequenceFlow id="Flow_review_undecided" sourceRef="Gateway_Review" targetRef="Task_SinkUndecided" />
+
+    <bpmn:scriptTask id="Task_Auth" name="AUTH">
+      <bpmn:incoming>Flow_entry_auth</bpmn:incoming>
+      <bpmn:incoming>Flow_review_approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_auth_communicate</bpmn:outgoing>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_auth_communicate" sourceRef="Task_Auth" targetRef="Task_Communicate" />
+
+    <bpmn:task id="Task_Communicate" name="COMMUNICATE">
+      <bpmn:incoming>Flow_auth_communicate</bpmn:incoming>
+      <bpmn:incoming>Flow_followup_communicate</bpmn:incoming>
+      <bpmn:incoming>Flow_wait_communicate</bpmn:incoming>
+      <bpmn:outgoing>Flow_communicate_check</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_communicate_check" sourceRef="Task_Communicate" targetRef="Gateway_Received" />
+
+    <bpmn:exclusiveGateway id="Gateway_Received">
+      <bpmn:incoming>Flow_communicate_check</bpmn:incoming>
+      <bpmn:outgoing>Flow_check_received</bpmn:outgoing>
+      <bpmn:outgoing>Flow_check_max</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_check_received" name="Info received?" sourceRef="Gateway_Received" targetRef="Task_SinkReceived" />
+    <bpmn:sequenceFlow id="Flow_check_max" sourceRef="Gateway_Received" targetRef="Gateway_MaxFollowUps" />
+
+    <bpmn:exclusiveGateway id="Gateway_MaxFollowUps">
+      <bpmn:incoming>Flow_check_max</bpmn:incoming>
+      <bpmn:outgoing>Flow_max_sink</bpmn:outgoing>
+      <bpmn:outgoing>Flow_max_followup</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_max_sink" name="Max follow ups reached?" sourceRef="Gateway_MaxFollowUps" targetRef="Task_SinkMaxFollowUps" />
+    <bpmn:sequenceFlow id="Flow_max_followup" sourceRef="Gateway_MaxFollowUps" targetRef="Gateway_FollowUp" />
+
+    <bpmn:exclusiveGateway id="Gateway_FollowUp">
+      <bpmn:incoming>Flow_max_followup</bpmn:incoming>
+      <bpmn:outgoing>Flow_followup_task</bpmn:outgoing>
+      <bpmn:outgoing>Flow_followup_wait</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_followup_task" name="Follow up date reached?" sourceRef="Gateway_FollowUp" targetRef="Task_FollowUp" />
+    <bpmn:sequenceFlow id="Flow_followup_wait" sourceRef="Gateway_FollowUp" targetRef="Task_Wait" />
+
+    <bpmn:userTask id="Task_FollowUp" name="FOLLOW_UP">
+      <bpmn:incoming>Flow_followup_task</bpmn:incoming>
+      <bpmn:outgoing>Flow_followup_communicate</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_followup_communicate" sourceRef="Task_FollowUp" targetRef="Task_Communicate" />
+
+    <bpmn:serviceTask id="Task_Wait" name="WAIT">
+      <bpmn:incoming>Flow_followup_wait</bpmn:incoming>
+      <bpmn:outgoing>Flow_wait_communicate</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_wait_communicate" sourceRef="Task_Wait" targetRef="Task_Communicate" />
+
+    <bpmn:scriptTask id="Task_SinkReceived" name="SINK_RECEIVED">
+      <bpmn:incoming>Flow_check_received</bpmn:incoming>
+    </bpmn:scriptTask>
+
+    <bpmn:scriptTask id="Task_SinkMaxFollowUps" name="SINK_MAX_FOLLOW_UPS">
+      <bpmn:incoming>Flow_max_sink</bpmn:incoming>
+    </bpmn:scriptTask>
+
+    <bpmn:scriptTask id="Task_SinkCancelled" name="SINK_CANCELLED">
+      <bpmn:incoming>Flow_review_declined</bpmn:incoming>
+    </bpmn:scriptTask>
+
+    <bpmn:scriptTask id="Task_SinkUndecided" name="SINK_UNDECIDED">
+      <bpmn:incoming>Flow_review_undecided</bpmn:incoming>
+    </bpmn:scriptTask>
+
+  </bpmn:process>
+</bpmn:definitions>

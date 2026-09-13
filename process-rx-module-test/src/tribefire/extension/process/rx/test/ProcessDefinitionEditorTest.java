@@ -154,6 +154,46 @@ public class ProcessDefinitionEditorTest {
 	}
 
 	@Test
+	public void edgeIsFoundByItsEndpoints() {
+		ProcessDefinitionEditor editor = editor();
+		editor.rootEdge("a", "root-a");
+		editor.edge("a", "b", "a-b");
+
+		assertThat(editor.requireEdge(null, "a").getName()).isEqualTo("root-a");
+		assertThat(editor.requireEdge("a", "b").getName()).isEqualTo("a-b");
+	}
+
+	@Test
+	public void unknownEndpointsAreRejected() {
+		ProcessDefinitionEditor editor = editor();
+		editor.edge("a", "b", "a-b");
+
+		assertThatThrownBy(() -> editor.requireEdge("a", "c")).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> editor.requireEdge("c", "a")).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	/** Two edges between the same pair of nodes cannot be told apart by their endpoints, so the editor refuses to guess. */
+	@Test
+	public void ambiguousEndpointsAreRejected() {
+		ProcessDefinitionEditor editor = editor();
+		editor.conditionedEdge("a", "b", "a-b-early", "condition.early");
+		editor.edge("a", "b", "a-b-late");
+
+		assertThatThrownBy(() -> editor.requireEdge("a", "b")).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	/** How an application answers the question of an edge it did not create, for example one translated from a diagram. */
+	@Test
+	public void conditionIsAttachedToAnExistingEdge() {
+		ProcessDefinitionEditor editor = editor();
+		editor.edge("a", "b", "a-b");
+
+		editor.condition("a", "b", "condition.b");
+
+		assertThat(editor.requireEdge("a-b").getCondition().getConditionProcessorId()).isEqualTo("condition.b");
+	}
+
+	@Test
 	public void blankEdgeNameIsRejected() {
 		ProcessDefinitionEditor editor = editor();
 

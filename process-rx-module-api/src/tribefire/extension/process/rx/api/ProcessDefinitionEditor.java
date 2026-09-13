@@ -130,6 +130,44 @@ public final class ProcessDefinitionEditor {
 		return edge;
 	}
 
+	/**
+	 * The single edge from one state to another.
+	 * <p>
+	 * Use it where the name of an edge is not the application's to choose, for instance on a graph that was translated
+	 * from a BPMN diagram, where the names come from the labels of the drawing.
+	 */
+	public Edge requireEdge(String fromState, String toState) {
+		Node from = requireNode(fromState);
+
+		Edge found = null;
+		for (Edge edge : from.getEdges()) {
+			if (!Objects.equals(edge.getTo().getState(), toState))
+				continue;
+			if (found != null)
+				throw new IllegalArgumentException("Ambiguous edges from [" + fromState + "] to [" + toState + "]: '" + found.getName()
+						+ "' and '" + edge.getName() + "'");
+			found = edge;
+		}
+
+		if (found == null)
+			throw new IllegalArgumentException("No edge from [" + fromState + "] to [" + toState + "]");
+
+		return found;
+	}
+
+	/**
+	 * Gives an edge that already exists the condition processor that decides whether it is taken. This is how an
+	 * application answers the questions of a graph it did not build itself.
+	 */
+	public ProcessDefinitionEditor condition(String fromState, String toState, String conditionProcessorId) {
+		return condition(fromState, toState, Condition.processor(conditionProcessorId));
+	}
+
+	public ProcessDefinitionEditor condition(String fromState, String toState, Condition condition) {
+		requireEdge(fromState, toState).setCondition(condition);
+		return this;
+	}
+
 	public void removeEdge(String name) {
 		Edge edge = edgesByName.remove(name);
 		if (edge == null)

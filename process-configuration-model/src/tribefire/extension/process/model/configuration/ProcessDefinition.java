@@ -78,7 +78,8 @@ import com.braintribe.model.time.TimeSpan;
  * <li>A node with a {@link Node#getDecoupledInteraction() decoupled interaction} stops the process. Work then happens outside the engine, and that
  * party hands the process back with {@code ResumeProcess} or {@code ResumeProcessToState}. A {@link Node#getGracePeriod() grace period} turns the
  * waiting into a deadline.
- * <li>A drain node ends the process.
+ * <li>A drain node ends the process - unless it also declares a decoupled interaction. The interaction is honoured first, so such a node waits, and
+ * the process ends only once somebody resumes it.
  * <li>A failing transition or condition processor halts the process, runs {@link Node#getOnError()} and {@link #getOnError()}, and leaves it for an
  * operator, who continues it with {@code RecoverProcess}.
  * </ul>

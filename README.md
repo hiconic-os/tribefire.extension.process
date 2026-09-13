@@ -56,7 +56,7 @@ All of them run when the process is **already in the entered state**, `onLeft` i
 ## Waiting, ending, failing
 
 - A node with a `decoupledInteraction` stops the process. Work then happens outside the engine, and that party hands the process back with `ResumeProcess` or `ResumeProcessToState`. A `gracePeriod` turns the waiting into a deadline, after which the engine continues the process by itself - over the node's `overdueNode` if one is declared, else by normal routing.
-- A drain node ends the process.
+- A drain node ends the process - unless it also declares a decoupled interaction. The interaction is honoured first, so such a node waits, and since it has no outgoing edge, the process ends only once somebody resumes it.
 - A failing transition or condition processor halts the process, runs `onError` of the node and of the definition, and leaves it for an operator, who continues it with `RecoverProcess`.
 
 A deadline is noticed by a search that runs per configured access, which `ProcessDefinitionsConfiguration.monitoredAccessIds` describes. The same search finds a process that stopped making progress, e.g. because the application was killed while it ran. In an access that is not listed there, a process runs normally, but nobody looks after it once it stops.

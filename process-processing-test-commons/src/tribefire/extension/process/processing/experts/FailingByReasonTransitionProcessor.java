@@ -20,13 +20,14 @@ import tribefire.extension.process.api.TransitionProcessorContext;
 import tribefire.extension.process.test.model.FailingByReasonTestProcess;
 
 public class FailingByReasonTransitionProcessor extends TestTransitionProcessor<FailingByReasonTestProcess> {
+	public static final String REASON_TEXT = "Canceled intentionally by transition processor: " + "x".repeat(3000);
 	
 	@Override
 	public void process(TransitionProcessorContext<FailingByReasonTestProcess> context) {
 		if (context.getProcess().getDoNotFail())
 			return;
 		
-		context.setError(Reasons.build(Canceled.T).text("Canceled intentionally by transition processor").toReason());
+		context.setError(Reasons.build(Canceled.T).text(REASON_TEXT).toReason());
 	}
 	
 }

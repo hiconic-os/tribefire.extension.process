@@ -48,6 +48,7 @@ public interface ProcessLogEntry extends GenericEntity {
 	String level = "level";
 	String initiator = "initiator";
 	String traceDetails = "traceDetails";
+	String tracebackId = "tracebackId";
 
 	/**
 	 * A weakly coupled reference to the {@link ProcessItem#getId()} for which this entry was recorded. It is weekly coupled in order
@@ -78,6 +79,11 @@ public interface ProcessLogEntry extends GenericEntity {
 	@MaxLength(2000)
 	String getTraceDetails();
 	void setTraceDetails(String traceDetails);
+
+	/** Correlates truncated details or a Java exception with the complete application-log entry. */
+	@MaxLength(64)
+	String getTracebackId();
+	void setTracebackId(String tracebackId);
 	
 	/**
 	 * A classification of that entry that is used to differentiate it with well known enum constants 

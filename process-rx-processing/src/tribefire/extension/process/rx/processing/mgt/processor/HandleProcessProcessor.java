@@ -36,6 +36,7 @@ import tribefire.extension.process.api.TransitionProcessor;
 import tribefire.extension.process.api.model.ctrl.HandleProcess;
 import tribefire.extension.process.api.model.ctrl.NotifyProcessActivity;
 import tribefire.extension.process.data.model.ProcessItem;
+import tribefire.extension.process.data.model.log.ProcessLogEntry;
 import tribefire.extension.process.data.model.log.ProcessLogEvent;
 import tribefire.extension.process.data.model.state.ProcessActivity;
 import tribefire.extension.process.data.model.state.TransitionPhase;
@@ -201,22 +202,23 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 			TransitionProcessor<ProcessItem> processor = (TransitionProcessor<ProcessItem>) processManagerContext.processExpertResolver
 					.resolveTransitionProcessor(processorReference.getProcessorId());
 
+			TimeSpan duration;
 			try {
-				TimeSpan duration = runAndKeepProcessAlive(() -> processor.process(tpContext));
+				duration = runAndKeepProcessAlive(() -> processor.process(tpContext));
 
 				PersistenceGmSession session = tpContext.getSession();
 				if (session.getTransaction().hasManipulations())
 					session.commit();
 
-				if (tpContext.getError() != null) {
-					return handleError(tpContext.getError(), ProcessLogEvent.ERROR_IN_PROCESSOR,
-							"error while executing transition processor " + processorInfo);
-				}
-
-				log(ProcessLogEvent.PROCESSOR_EXECUTED, processorInfo + " executed in " + duration.formatWithFloorUnitAndSubUnit(), transitionOracle);
 			} catch (Exception e) {
 				return handleError(e, ProcessLogEvent.ERROR_IN_PROCESSOR, "error while executing transition processor " + processorInfo);
 			}
+
+			if (tpContext.getError() != null)
+				return handleError(tpContext.getError(), ProcessLogEvent.ERROR_IN_PROCESSOR,
+						"error while executing transition processor " + processorInfo);
+
+			log(ProcessLogEvent.PROCESSOR_EXECUTED, processorInfo + " executed in " + duration.formatWithFloorUnitAndSubUnit(), transitionOracle);
 
 			String continueWithState = tpContext.getContinueWithState();
 
@@ -450,21 +452,20 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 
 		BasicConditionProcessorContext<ProcessItem> context = new BasicConditionProcessorContext<>(systemSession(), processItem);
 
+		ValueAndDuration<Boolean> result;
 		try {
-			ValueAndDuration<Boolean> v = callAndKeepProcessAlive(() -> processor.matches(context));
-			TimeSpan duration = v.duration;
-
-			if (context.getError() != null) {
-				return handleError(context.getError(), ProcessLogEvent.ERROR_IN_CONDITION, "error while checking condition " + processorInfo);
-			}
-
-			log(ProcessLogEvent.CONDITION_EVALUATED, "called condition processor " + processorInfo + " for state [" + toState
-					+ "] in " + duration.formatWithFloorUnitAndSubUnit(), transitionOracle);
-
-			return Maybe.complete(v.value);
+			result = callAndKeepProcessAlive(() -> processor.matches(context));
 		} catch (Exception e) {
 			return handleError(e, ProcessLogEvent.ERROR_IN_CONDITION, "error while checking condition " + processorInfo);
 		}
+
+		if (context.getError() != null)
+			return handleError(context.getError(), ProcessLogEvent.ERROR_IN_CONDITION, "error while checking condition " + processorInfo);
+
+		log(ProcessLogEvent.CONDITION_EVALUATED, "called condition processor " + processorInfo + " for state [" + toState
+				+ "] in " + result.duration.formatWithFloorUnitAndSubUnit(), transitionOracle);
+
+		return Maybe.complete(result.value);
 	}
 
 	private Maybe<Boolean> evaluateConditionExpression(String expression, String toState) {
@@ -490,40 +491,82 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 
 	private <T> Maybe<T> handleError(Exception e, ProcessLogEvent event, String msg) {
 		String tracebackId = UUID.randomUUID().toString();
-		logger.error("Error while processing " + processItem + " (tracebackId=" + tracebackId + ")", e);
+		logger.error(msg + " for " + processItem + " (tracebackId=" + tracebackId + ")", e);
 
 		InternalError reason = Reasons.build(InternalError.T) //
-				.text("Error while processing. See log with tracebackId=" + tracebackId) //
+				.text("Error while processing") //
 				.assign(InternalError::setJavaException, e) //
 				.toReason();
 
-		return handleError(reason, event, msg);
+		actuallyHandleError(reason, event, msg, tracebackId, true);
+		return reason.asMaybe();
 	}
 
 	private <T> Maybe<T> handleError(Reason error, ProcessLogEvent event) {
-		// TODO: separate short msg from details (trim in any case to the MaxLength)
-		actuallyHandleError(event, error.stringify());
+		actuallyHandleError(error, event, null, null, false);
 		return error.asMaybe();
 	}
 
 	private <T> Maybe<T> handleError(Reason error, ProcessLogEvent event, String msg) {
-		// TODO: separate short msg from details (trim in any case to the MaxLength)
-		actuallyHandleError(event, msg + ": " + error.stringify());
+		actuallyHandleError(error, event, msg, null, false);
 		return error.asMaybe();
 	}
 
-	private void actuallyHandleError(ProcessLogEvent event, String msg) {
-		log(event, msg);
+	private void actuallyHandleError(Reason error, ProcessLogEvent event, String contextMessage, String tracebackId,
+			boolean diagnosticsAlreadyLogged) {
+		String details = error.stringify(true);
+		String summary = summarize(error);
+		String message = contextMessage == null || contextMessage.isEmpty() ? summary : contextMessage + ": " + summary;
 
-		// halt process
-		processItem.setActivity(ProcessActivity.halted);
-		log(ProcessLogEvent.PROCESS_HALTED, "Process halted after an error. Take special care and continue with RecoverProcess.");
-		commitItem();
+		try {
+			ProcessLogEntry errorEntry = build(event).msg(message).traceDetails(details).tracebackId(tracebackId).done();
+			if (tracebackId == null && (!message.equals(errorEntry.getMsg()) || !details.equals(errorEntry.getTraceDetails()))) {
+				tracebackId = UUID.randomUUID().toString();
+				errorEntry.setTracebackId(tracebackId);
+			}
+			tracebackId = errorEntry.getTracebackId();
 
-		// notify error handlers
+			if (tracebackId != null && !diagnosticsAlreadyLogged)
+				logger.error("Complete process error (tracebackId=" + tracebackId + "):\n" + message + "\n" + details);
+
+			processItem.setActivity(ProcessActivity.halted);
+			build(ProcessLogEvent.PROCESS_HALTED) //
+					.msg("Process halted after an error. Take special care and continue with RecoverProcess.") //
+					.tracebackId(tracebackId) //
+					.done();
+			commitItem();
+		} catch (RuntimeException e) {
+			String commitTracebackId = tracebackId != null ? tracebackId : UUID.randomUUID().toString();
+			logger.error("Could not persist process error log; persisting halted activity without log entries (tracebackId="
+					+ commitTracebackId + "). Complete process error:\n" + message + "\n" + details, e);
+			try {
+				persistHaltedWithoutProcessLog();
+			} catch (RuntimeException fallbackError) {
+				logger.error("Could not persist halted process activity (tracebackId=" + commitTracebackId + ")", fallbackError);
+				throw fallbackError;
+			}
+			try {
+				notifyProcess(ProcessActivity.halted);
+			} catch (RuntimeException notificationError) {
+				logger.error("Could not notify halted process (tracebackId=" + commitTracebackId + ")", notificationError);
+			}
+			return;
+		}
+
 		notifyError();
-
 		notifyProcess(ProcessActivity.halted);
+	}
+
+	private String summarize(Reason error) {
+		String text = error.getText();
+		return text == null || text.isEmpty() ? error.entityType().getShortName() : error.entityType().getShortName() + ": " + text;
+	}
+
+	private void persistHaltedWithoutProcessLog() {
+		PersistenceGmSession fallbackSession = systemSession().newEquivalentSession();
+		ProcessItem fallbackItem = fallbackSession.query().entity(processItem).findLocalOrBuildShallow();
+		fallbackItem.setActivity(ProcessActivity.halted);
+		fallbackSession.commit();
 	}
 
 	private void notifyError() {

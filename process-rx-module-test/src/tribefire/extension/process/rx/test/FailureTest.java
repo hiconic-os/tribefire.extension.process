@@ -14,6 +14,7 @@ import com.braintribe.model.processing.session.api.persistence.PersistenceGmSess
 
 import hiconic.rx.test.common.RxPlatformTestClassRule;
 import tribefire.extension.process.data.model.log.ProcessLogEvent;
+import tribefire.extension.process.data.model.log.ProcessLogEntry;
 import tribefire.extension.process.data.model.state.ProcessActivity;
 import tribefire.extension.process.rx.test.model.FailingTestProcess;
 
@@ -37,6 +38,11 @@ public class FailureTest extends AbstractProcessEngineTest {
 
 		assertThat(reload(process).getState()).isEqualTo(STATE_WORK);
 		assertThat(logEvents(process)).contains(ProcessLogEvent.ERROR_IN_PROCESSOR, ProcessLogEvent.PROCESS_HALTED);
+		ProcessLogEntry error = processLog(process).getEntries().stream() //
+				.filter(entry -> entry.getEvent() == ProcessLogEvent.ERROR_IN_PROCESSOR) //
+				.findFirst().orElseThrow();
+		assertThat(error.getTraceDetails()).contains("IllegalStateException");
+		assertThat(error.getTracebackId()).isNotBlank();
 	}
 
 	@Test
@@ -47,6 +53,12 @@ public class FailureTest extends AbstractProcessEngineTest {
 		await(process, ProcessActivity.halted);
 
 		assertThat(logEvents(process)).contains(ProcessLogEvent.ERROR_IN_PROCESSOR, ProcessLogEvent.PROCESS_HALTED);
+		ProcessLogEntry error = processLog(process).getEntries().stream() //
+				.filter(entry -> entry.getEvent() == ProcessLogEvent.ERROR_IN_PROCESSOR) //
+				.findFirst().orElseThrow();
+		assertThat(error.getMsg()).hasSizeLessThanOrEqualTo(255).endsWith("...");
+		assertThat(error.getTraceDetails()).hasSizeLessThanOrEqualTo(2000).endsWith("...");
+		assertThat(error.getTracebackId()).isNotBlank();
 	}
 
 	@Test

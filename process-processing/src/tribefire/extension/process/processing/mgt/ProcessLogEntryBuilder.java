@@ -20,6 +20,8 @@ import tribefire.extension.process.data.model.log.ProcessLogLevel;
 
 public interface ProcessLogEntryBuilder {
 	ProcessLogEntryBuilder msg(String msg);
+	ProcessLogEntryBuilder traceDetails(String traceDetails);
+	ProcessLogEntryBuilder tracebackId(String tracebackId);
 	ProcessLogEntryBuilder level(ProcessLogLevel level);
 	ProcessLogEntryBuilder date(Date date);
 	ProcessLogEntryBuilder state(String state);

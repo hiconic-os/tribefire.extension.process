@@ -499,12 +499,39 @@ public class ProcessTest extends ProcessProcessingTestBase {
 	public void failingByReasonProcess() {
 		EntityType<FailingByReasonTestProcess> processType = FailingByReasonTestProcess.T;
 		
-		failingProcess(processType);
+		FailingByReasonTestProcess process = failingProcess(processType);
+		PersistenceGmSession session = testContract.sessionFactory().newSession(ProcessProcessingTestCommons.ACCESS_ID_PROCESSES);
+		GetProcessLog getProcessLog = GetProcessLog.T.create();
+		getProcessLog.item(process);
+		ProcessLogEntry error = getProcessLog.eval(session).get().getEntries().stream() //
+				.filter(entry -> entry.getEvent() == ProcessLogEvent.ERROR_IN_PROCESSOR) //
+				.findFirst().orElseThrow();
+		Assertions.assertThat(error.getMsg()).hasSizeLessThanOrEqualTo(255).endsWith("...");
+		Assertions.assertThat(error.getTraceDetails()).hasSizeLessThanOrEqualTo(2000).endsWith("...");
+		Assertions.assertThat(error.getTracebackId()).isNotBlank();
 	}
 	
 	@Test
 	public void failingByExceptionProcess() {
-		failingProcess(FailingByExceptionTestProcess.T);
+		FailingByExceptionTestProcess process = failingProcess(FailingByExceptionTestProcess.T);
+		PersistenceGmSession session = testContract.sessionFactory().newSession(ProcessProcessingTestCommons.ACCESS_ID_PROCESSES);
+		GetProcessLog getProcessLog = GetProcessLog.T.create();
+		getProcessLog.item(process);
+		ProcessLogEntry error = getProcessLog.eval(session).get().getEntries().stream() //
+				.filter(entry -> entry.getEvent() == ProcessLogEvent.ERROR_IN_PROCESSOR) //
+				.findFirst().orElseThrow();
+		Assertions.assertThat(error.getTraceDetails()).contains("RuntimeException");
+		Assertions.assertThat(error.getTracebackId()).isNotBlank();
+	}
+
+	@Test
+	public void shortTraceDetailsNeedNoTracebackId() {
+		ProcessLogEntry entry = new tribefire.extension.process.processing.mgt.ProcessLogEntryBuilderImpl(ProcessLogEvent.ERROR_IN_PROCESSOR) //
+				.msg("short message") //
+				.traceDetails("short details") //
+				.done();
+
+		Assertions.assertThat(entry.getTracebackId()).isNull();
 	}
 
 

@@ -11,6 +11,7 @@ import tribefire.extension.process.rx.test.model.FailingTestProcess;
 public class FailingAction implements TransitionProcessor<FailingTestProcess> {
 
 	public static final String REASON_TEXT = "the test asked this processor to fail";
+	public static final String LONG_REASON_TEXT = REASON_TEXT + ": " + "x".repeat(3000);
 
 	@Override
 	public void process(TransitionProcessorContext<FailingTestProcess> context) {
@@ -20,7 +21,7 @@ public class FailingAction implements TransitionProcessor<FailingTestProcess> {
 			throw new IllegalStateException(REASON_TEXT);
 
 		if (process.getFailByReason()) {
-			context.setError(Reasons.build(InvalidArgument.T).text(REASON_TEXT).toReason());
+			context.setError(Reasons.build(InvalidArgument.T).text(LONG_REASON_TEXT).toReason());
 			return;
 		}
 

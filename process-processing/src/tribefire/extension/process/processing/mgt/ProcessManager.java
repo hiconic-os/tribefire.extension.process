@@ -23,7 +23,9 @@ import com.braintribe.cfg.Required;
 import com.braintribe.common.concurrent.TaskScheduler;
 import com.braintribe.gm.model.reason.Maybe;
 import com.braintribe.logging.Logger;
+import com.braintribe.model.generic.GenericEntity;
 import com.braintribe.model.generic.eval.Evaluator;
+import com.braintribe.model.generic.value.PreliminaryEntityReference;
 import com.braintribe.model.messaging.Message;
 import com.braintribe.model.processing.accessrequest.api.AbstractDispatchingAccessRequestProcessor;
 import com.braintribe.model.processing.accessrequest.api.DispatchConfiguration;
@@ -76,6 +78,7 @@ import tribefire.extension.process.processing.mgt.processor.WaitForProcessesProc
 public class ProcessManager extends AbstractDispatchingAccessRequestProcessor<ProcessManagerRequest, Object> implements Worker, LifecycleAware, ProcessManagerConstants  {
 	
 	private static final Logger logger = Logger.getLogger(ProcessManager.class);
+	private static final String REVIVAL_WORKER_ID = ProcessManager.class.getName() + ".revival";
 	
 	private ProcessManagerContext processManagerContext = new ProcessManagerContext();
 
@@ -199,6 +202,18 @@ public class ProcessManager extends AbstractDispatchingAccessRequestProcessor<Pr
 	public void start(WorkerContext workerContext) throws WorkerException {
 		if (processManagerContext.monitorInterval != null)
 			monitorFuture = workerContext.submit(new ProcessRevivalWorker(processManagerContext));
+	}
+
+	@Override
+	public boolean isSingleton() {
+		return true;
+	}
+
+	@Override
+	public GenericEntity getWorkerIdentification() {
+		PreliminaryEntityReference identification = PreliminaryEntityReference.T.create();
+		identification.setId(REVIVAL_WORKER_ID);
+		return identification;
 	}
 
 	@Override

@@ -125,11 +125,14 @@ public abstract class AbstractProcessEngineTest extends AbstractClassScopedRxTes
 	}
 
 	protected List<ProcessLogEvent> logEvents(ProcessItem process) {
+		return processLog(process).getEntries().stream().map(ProcessLogEntry::getEvent).toList();
+	}
+
+	protected ProcessLog processLog(ProcessItem process) {
 		GetProcessLog request = GetProcessLog.T.create();
 		request.item(process);
 
-		ProcessLog log = request.eval(session()).get();
-		return log.getEntries().stream().map(ProcessLogEntry::getEvent).toList();
+		return request.eval(session()).get();
 	}
 
 	/** State, activity, phase, deadline and log of a process, for a failure message. */

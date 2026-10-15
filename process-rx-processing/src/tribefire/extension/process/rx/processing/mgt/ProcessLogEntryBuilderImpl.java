@@ -14,9 +14,13 @@
 package tribefire.extension.process.rx.processing.mgt;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.braintribe.model.generic.session.GmSession;
+import com.braintribe.model.meta.data.constraint.MaxLength;
+import com.braintribe.model.processing.meta.cmd.builders.EntityMdResolver;
+import com.braintribe.model.processing.session.api.managed.ManagedGmSession;
 
 import tribefire.extension.process.data.model.log.ProcessLogEntry;
 import tribefire.extension.process.data.model.log.ProcessLogEvent;
@@ -27,6 +31,8 @@ public class ProcessLogEntryBuilderImpl implements ProcessLogEntryBuilder {
 	private ProcessLogEvent event;
 	private GmSession session;
 	private String msg;
+	private String traceDetails;
+	private String tracebackId;
 	private ProcessLogLevel level;
 	private Date date = new Date();
 	private String state;
@@ -58,8 +64,19 @@ public class ProcessLogEntryBuilderImpl implements ProcessLogEntryBuilder {
 	
 	@Override
 	public ProcessLogEntryBuilder msg(String msg) {
-		// TODO: trim total message to maximum possible length (discover by MaxLength MD) using "..."
 		this.msg = msg;
+		return this;
+	}
+
+	@Override
+	public ProcessLogEntryBuilder traceDetails(String traceDetails) {
+		this.traceDetails = traceDetails;
+		return this;
+	}
+
+	@Override
+	public ProcessLogEntryBuilder tracebackId(String tracebackId) {
+		this.tracebackId = tracebackId;
 		return this;
 	}
 
@@ -108,7 +125,15 @@ public class ProcessLogEntryBuilderImpl implements ProcessLogEntryBuilder {
 		entry.setItemId(itemId);
 		
 		if (msg != null)
-			entry.setMsg(msg);
+			entry.setMsg(limit(msg, ProcessLogEntry.msg, 255));
+
+		if (traceDetails != null) {
+			String limitedDetails = limit(traceDetails, ProcessLogEntry.traceDetails, 2000);
+			entry.setTraceDetails(limitedDetails);
+		}
+
+		if (tracebackId != null)
+			entry.setTracebackId(limit(tracebackId, ProcessLogEntry.tracebackId, 64));
 		
 		if (initiator != null)
 			entry.setInitiator(initiator);
@@ -125,6 +150,33 @@ public class ProcessLogEntryBuilderImpl implements ProcessLogEntryBuilder {
 			consumer.accept(entry);
 		
 		return entry;
+	}
+
+	private String limit(String value, String property, int fallbackLimit) {
+		int maxLength = maxLength(property, fallbackLimit);
+		if (maxLength < 0)
+			return value;
+		if (value.length() <= maxLength)
+			return value;
+		if (maxLength <= 3)
+			return value.substring(0, maxLength);
+
+		int end = maxLength - 3;
+		if (end > 0 && end < value.length() && Character.isHighSurrogate(value.charAt(end - 1)))
+			end--;
+		return value.substring(0, end) + "...";
+	}
+
+	private int maxLength(String property, int fallbackLimit) {
+		if (!(session instanceof ManagedGmSession))
+			return fallbackLimit;
+
+		ManagedGmSession managedSession = (ManagedGmSession) session;
+		EntityMdResolver mdResolver = managedSession.getModelAccessory().getCmdResolver().getMetaData().entityType(ProcessLogEntry.T);
+		long configured = Optional.ofNullable(mdResolver.property(property).meta(MaxLength.T).exclusive()) //
+				.map(MaxLength::getLength) //
+				.orElse((long) fallbackLimit);
+		return configured > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) configured;
 	}
 
 }

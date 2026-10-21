@@ -37,7 +37,8 @@ public class FailureTest extends AbstractProcessEngineTest {
 		assertThat(await(process, ProcessActivity.halted)).isEqualTo(ProcessActivity.halted);
 
 		assertThat(reload(process).getState()).isEqualTo(STATE_WORK);
-		assertThat(logEvents(process)).contains(ProcessLogEvent.ERROR_IN_PROCESSOR, ProcessLogEvent.PROCESS_HALTED);
+		assertThat(logEvents(process)).contains(ProcessLogEvent.PROCESSOR_EXECUTING, ProcessLogEvent.ERROR_IN_PROCESSOR,
+				ProcessLogEvent.PROCESS_HALTED);
 		ProcessLogEntry error = processLog(process).getEntries().stream() //
 				.filter(entry -> entry.getEvent() == ProcessLogEvent.ERROR_IN_PROCESSOR) //
 				.findFirst().orElseThrow();

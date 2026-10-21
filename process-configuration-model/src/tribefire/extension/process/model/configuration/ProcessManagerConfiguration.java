@@ -22,11 +22,11 @@ public interface ProcessManagerConfiguration extends GenericEntity {
 
 	/**
 	 * How long a process may stay in activity {@code processing} without progress before the worker treats it as <b>unattended</b> and hands it back
-	 * to the engine. Default: one minute.
+	 * to the engine. Default: three minutes.
 	 * <p>
 	 * A process that runs a long transition processor is not unattended: the engine refreshes the progress date every 15 seconds while a processor
-	 * works. A threshold below that refresh interval therefore lets the worker chase healthy processes, which does no damage, as the lock on the
-	 * process rejects the second attempt, but it fills the log.
+	 * works. The threshold should also be comfortably longer than the distributed lock lease, so a short database, scheduler or JVM interruption
+	 * cannot make a healthy process appear abandoned at the same time as its process lock expires.
 	 */
 	TimeSpan getUnattendedThreshold();
 	void setUnattendedThreshold(TimeSpan unattendedThreshold);

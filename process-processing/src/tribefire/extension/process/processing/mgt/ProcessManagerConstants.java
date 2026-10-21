@@ -13,6 +13,19 @@
 // ============================================================================
 package tribefire.extension.process.processing.mgt;
 
+import com.braintribe.model.time.TimeSpan;
+import com.braintribe.model.time.TimeUnit;
+
 public interface ProcessManagerConstants {
-	public static final String DEFAULT_QUEUE_NAME = "process-manager-queue";
+	String DEFAULT_QUEUE_NAME = "process-manager-queue";
+
+	/** How long the revival worker waits between two searches. */
+	TimeSpan DEFAULT_MONITOR_INTERVAL = TimeSpan.create(1, TimeUnit.minute);
+
+	/**
+	 * How long a process may stay in activity processing without progress before it counts as unattended. This is deliberately longer than the
+	 * process keep-alive interval (15 seconds) and the default DB lock lease (60 seconds), so short scheduler or database interruptions do not cause
+	 * a healthy process to be revived.
+	 */
+	TimeSpan DEFAULT_UNATTENDED_THRESHOLD = TimeSpan.create(3, TimeUnit.minute);
 }

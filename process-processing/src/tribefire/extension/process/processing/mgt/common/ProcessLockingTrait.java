@@ -21,7 +21,6 @@ import com.braintribe.exception.Exceptions;
 import com.braintribe.gm.model.reason.Maybe;
 import com.braintribe.gm.model.reason.Reasons;
 import com.braintribe.model.generic.reflection.EntityType;
-import com.braintribe.model.generic.value.PersistentEntityReference;
 import com.braintribe.model.processing.lock.api.Locking;
 import com.braintribe.model.processing.lock.api.ReentrableLocking;
 import com.braintribe.model.processing.session.api.persistence.PersistenceGmSession;
@@ -42,24 +41,37 @@ public interface ProcessLockingTrait {
 	
 	
 	default Maybe<Lock> lockProcess(String reentrantId) {
-		PersistentEntityReference reference = PersistentEntityReference.T.create();
-		
-		reference.setTypeSignature(getItemEntityType().getTypeSignature());
-		reference.setRefId(getItemId());
-		
+		return lockProcess(getLocking(), getItemEntityType(), getItemId(), systemSession().getAccessId(), reentrantId);
+	}
+
+	static Maybe<Lock> lockProcess(Locking locking, EntityType<? extends ProcessItem> itemType, String itemId, String accessId) {
+		return lockProcess(locking, itemType, itemId, accessId, null);
+	}
+
+	static Maybe<Lock> lockProcess(Locking locking, EntityType<? extends ProcessItem> itemType, String itemId, String accessId,
+			String reentrantId) {
+		return lockProcess(locking, itemType, itemId, accessId, reentrantId, 5, TimeUnit.SECONDS);
+	}
+
+	static Maybe<Lock> tryLockProcess(Locking locking, EntityType<? extends ProcessItem> itemType, String itemId, String accessId) {
+		return lockProcess(locking, itemType, itemId, accessId, null, 0, TimeUnit.MILLISECONDS);
+	}
+
+	private static Maybe<Lock> lockProcess(Locking locking, EntityType<? extends ProcessItem> itemType, String itemId, String accessId,
+			String reentrantId, long timeout, TimeUnit timeoutUnit) {
 		// TODO: in order to avoid lockId syntax redundancy we should get lock more conveniently with help of locking api 
-		String lockId = getItemEntityType().getTypeSignature() + "[" + getItemId() + "]@" + systemSession().getAccessId();  
+		String lockId = itemType.getTypeSignature() + "[" + itemId + "]@" + accessId;
 		
-		ReentrableLocking locking = reentrantId != null?
-				getLocking().withReentranceId(reentrantId):
-				getLocking();
+		ReentrableLocking effectiveLocking = reentrantId != null?
+				locking.withReentranceId(reentrantId):
+				locking;
 		
-		Lock lock = locking.forIdentifier("entity", lockId).writeLock();
+		Lock lock = effectiveLocking.forIdentifier("entity", lockId).writeLock();
 		
 		try {
-			if (!lock.tryLock(5, TimeUnit.SECONDS)) {
+			if (!lock.tryLock(timeout, timeoutUnit)) {
 				return Reasons.build(CouldNotAcquireProcessLock.T) //
-						.text("Could not acquire lock for ProcessItem " + getItemEntityType().getTypeSignature() + "[id=" + getItemId() + "]") //
+						.text("Could not acquire lock for ProcessItem " + itemType.getTypeSignature() + "[id=" + itemId + "]") //
 						.toMaybe();
 			}
 		} catch (InterruptedException e) {

@@ -28,7 +28,6 @@ import com.braintribe.model.processing.lock.api.Locking;
 import com.braintribe.model.processing.session.api.persistence.PersistenceGmSessionFactory;
 import com.braintribe.model.service.api.ServiceRequest;
 import com.braintribe.model.time.TimeSpan;
-import com.braintribe.model.time.TimeUnit;
 import com.braintribe.transport.messaging.api.MessageConsumer;
 import com.braintribe.transport.messaging.api.MessageProducer;
 import com.braintribe.transport.messaging.api.MessagingSession;
@@ -64,7 +63,9 @@ public class ProcessManagerContext extends ProcessTerminationListening {
 	
 	public ExecutorService executor;
 	
-	public TimeSpan monitorInterval = TimeSpan.create(1, TimeUnit.minute);
+	public TimeSpan monitorInterval = ProcessManagerConstants.DEFAULT_MONITOR_INTERVAL;
+
+	public TimeSpan unattendedThreshold = ProcessManagerConstants.DEFAULT_UNATTENDED_THRESHOLD;
 	
 	public TaskScheduler taskScheduler;
 

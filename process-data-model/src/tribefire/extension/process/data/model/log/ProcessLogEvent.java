@@ -37,6 +37,7 @@ public enum ProcessLogEvent implements EnumBase {
 	
 	CONDITION_MATCHED,
 	
+	PROCESSOR_EXECUTING,
 	PROCESSOR_EXECUTED,
 	ERROR_IN_PROCESSOR(ProcessLogLevel.ERROR),
 	

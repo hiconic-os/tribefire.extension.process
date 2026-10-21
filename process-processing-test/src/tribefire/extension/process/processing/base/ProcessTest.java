@@ -552,6 +552,7 @@ public class ProcessTest extends ProcessProcessingTestBase {
 		
 		logMatcher.build(ProcessLogEvent.CONDITION_MATCHED).state(SimpleProcessState.ONE.name()).done();
 		logMatcher.build(ProcessLogEvent.STATE_CHANGED).state(SimpleProcessState.TWO.name()).done();
+		logMatcher.build(ProcessLogEvent.PROCESSOR_EXECUTING).state(SimpleProcessState.TWO.name()).done();
 		logMatcher.build(ProcessLogEvent.ERROR_IN_PROCESSOR).state(SimpleProcessState.TWO.name()).done();
 		logMatcher.build(ProcessLogEvent.PROCESS_HALTED).state(SimpleProcessState.TWO.name()).done();
 		

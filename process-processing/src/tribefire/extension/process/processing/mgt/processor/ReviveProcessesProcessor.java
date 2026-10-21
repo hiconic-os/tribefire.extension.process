@@ -17,28 +17,30 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 import com.braintribe.gm.model.reason.Maybe;
 import com.braintribe.logging.Logger;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.processing.query.building.SelectQueries;
 import com.braintribe.model.processing.session.api.managed.ModelAccessory;
+import com.braintribe.model.processing.session.api.persistence.PersistenceGmSession;
 import com.braintribe.model.query.From;
 import com.braintribe.model.query.OrderingDirection;
 import com.braintribe.model.query.SelectQuery;
 import com.braintribe.model.query.conditions.Condition;
 import com.braintribe.model.service.api.result.Neutral;
 import com.braintribe.model.time.TimeSpan;
-import com.braintribe.model.time.TimeUnit;
 
 import tribefire.extension.process.api.model.ctrl.ReviveProcesses;
 import tribefire.extension.process.data.model.ProcessItem;
 import tribefire.extension.process.data.model.state.ProcessActivity;
 import tribefire.extension.process.model.deployment.ProcessDefinition;
 import tribefire.extension.process.model.deployment.meta.ManageProcessItemWith;
+import tribefire.extension.process.processing.mgt.common.ProcessLockingTrait;
 
 public class ReviveProcessesProcessor extends ProcessManagerRequestProcessor<ReviveProcesses, Neutral> {
-	private static final Logger logger = Logger.getLogger(RecoverProcessProcessor.class);
+	private static final Logger logger = Logger.getLogger(ReviveProcessesProcessor.class);
 
 	@Override
 	public Maybe<Neutral> processReasoned() {
@@ -67,13 +69,44 @@ public class ReviveProcessesProcessor extends ProcessManagerRequestProcessor<Rev
 	}
 
 	private void reviveUnattended(EntityType<? extends ProcessItem> processType) {
-		List<String> unattendedProcessItemIds = session().queryDetached().select(RevivalQueries.unattendedProcessIds(processType)).list();
+		List<String> unattendedProcessItemIds = session().queryDetached()
+				.select(RevivalQueries.unattendedProcessIds(processType, processManagerContext.unattendedThreshold)).list();
 		
 		logger.debug("Found " + unattendedProcessItemIds.size() + " unattended process(es) of type " + processType.getTypeSignature());
 
-		unattendedProcessItemIds.forEach(id -> processManagerContext.enqueueProcessContinuation(processType, id, session().getAccessId()));
+		long revivedCount = unattendedProcessItemIds.stream().filter(id -> claimAndReviveUnattended(processType, id)).count();
 		
-		logger.debug("Revived " + unattendedProcessItemIds.size() + " unattended process(es) of type " + processType.getTypeSignature());
+		logger.debug("Revived " + revivedCount + " unattended process(es) of type " + processType.getTypeSignature());
+	}
+
+	private boolean claimAndReviveUnattended(EntityType<? extends ProcessItem> processType, String itemId) {
+		String accessId = session().getAccessId();
+		Maybe<Lock> lockMaybe = ProcessLockingTrait.tryLockProcess(processManagerContext.locking, processType, itemId, accessId);
+
+		if (lockMaybe.isUnsatisfied()) {
+			logger.info("Skipping apparent unattended process " + processType.getTypeSignature() + "[" + itemId
+					+ "] because its process lock is still held");
+			return false;
+		}
+
+		Lock lock = lockMaybe.get();
+		try {
+			PersistenceGmSession claimSession = session().newEquivalentSession();
+			ProcessItem item = claimSession.query().entity(processType, itemId).find();
+			Date threshold = RevivalQueries.unattendedThreshold(processManagerContext.unattendedThreshold);
+
+			if (item == null || item.getActivity() != ProcessActivity.processing || item.getLastTransit() == null
+					|| !item.getLastTransit().before(threshold))
+				return false;
+
+			// This timestamp is a lease, preventing a later monitor pass from enqueuing the same revival again.
+			item.setLastTransit(new Date());
+			claimSession.commit();
+			processManagerContext.enqueueProcessContinuation(processType, itemId, accessId);
+			return true;
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	private List<EntityType<? extends ProcessItem>> getMappedProcessesTypes() {
@@ -103,8 +136,12 @@ public class ReviveProcessesProcessor extends ProcessManagerRequestProcessor<Rev
 	}
 	
 	private static class RevivalQueries extends SelectQueries {
-		static SelectQuery unattendedProcessIds(EntityType<? extends ProcessItem> processType) {
-			Date stateThreshold = new Date(System.currentTimeMillis() - TimeSpan.create(1, TimeUnit.minute).toLongMillies());
+		static Date unattendedThreshold(TimeSpan unattendedThreshold) {
+			return new Date(System.currentTimeMillis() - unattendedThreshold.toLongMillies());
+		}
+
+		static SelectQuery unattendedProcessIds(EntityType<? extends ProcessItem> processType, TimeSpan unattendedThreshold) {
+			Date stateThreshold = unattendedThreshold(unattendedThreshold);
 			From p = source(processType);
 			
 			Condition condition = and( //

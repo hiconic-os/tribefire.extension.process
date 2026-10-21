@@ -194,6 +194,7 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 
 			String processorInfo = buildProcessorId(processorReference);
 
+			log(ProcessLogEvent.PROCESSOR_EXECUTING, "executing " + processorInfo, transitionOracle);
 			commitItem();
 
 			// do actual processor call
@@ -210,8 +211,11 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 				if (session.getTransaction().hasManipulations())
 					session.commit();
 
-			} catch (Exception e) {
-				return handleError(e, ProcessLogEvent.ERROR_IN_PROCESSOR, "error while executing transition processor " + processorInfo);
+			} catch (Throwable e) {
+				Maybe<Neutral> error = handleError(e, ProcessLogEvent.ERROR_IN_PROCESSOR,
+						"error while executing transition processor " + processorInfo);
+				rethrowIfFatal(e);
+				return error;
 			}
 
 			if (tpContext.getError() != null)
@@ -284,10 +288,26 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 	}
 
 	private class UpdateLastTransitionTask extends TimerTask {
+		private int consecutiveFailures;
+
 		@Override
 		public void run() {
-			updateLastTransitionDate();
+			try {
+				updateLastTransitionDate();
+				if (consecutiveFailures > 0)
+					logger.info("Process keep-alive recovered after " + consecutiveFailures + " failure(s) for " + processDescription());
+				consecutiveFailures = 0;
+			} catch (RuntimeException e) {
+				consecutiveFailures++;
+				logger.error("Could not update process keep-alive (consecutive failure " + consecutiveFailures + ") for "
+						+ processDescription(), e);
+			}
 		}
+	}
+
+	private String processDescription() {
+		return processItem.entityType().getTypeSignature() + "[" + processItem.getId() + "] in access [" + systemSession().getAccessId()
+				+ "] while executing transition processor [" + processItem.getTransitionProcessorId() + "]";
 	}
 
 	private void updateLastTransitionDate() {
@@ -489,7 +509,7 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 		}
 	}
 
-	private <T> Maybe<T> handleError(Exception e, ProcessLogEvent event, String msg) {
+	private <T> Maybe<T> handleError(Throwable e, ProcessLogEvent event, String msg) {
 		String tracebackId = UUID.randomUUID().toString();
 		logger.error(msg + " for " + processItem + " (tracebackId=" + tracebackId + ")", e);
 
@@ -500,6 +520,11 @@ public class HandleProcessProcessor extends OracledProcessRequestProcessor<Handl
 
 		actuallyHandleError(reason, event, msg, tracebackId, true);
 		return reason.asMaybe();
+	}
+
+	private static void rethrowIfFatal(Throwable throwable) {
+		if (throwable instanceof Error fatal && !(fatal instanceof AssertionError))
+			throw fatal;
 	}
 
 	private <T> Maybe<T> handleError(Reason error, ProcessLogEvent event) {
